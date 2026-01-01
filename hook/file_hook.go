@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/Lunar-Chipter/mire/core"
-	"github.com/Lunar-Chipter/mire/formatter"
+	"github.com/Luvion1/mire/core"
+	"github.com/Luvion1/mire/formatter"
 )
 
 // Hook interface defines the contract for log processing hooks

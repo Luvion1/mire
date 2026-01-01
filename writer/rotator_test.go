@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Lunar-Chipter/mire/config"
+	"github.com/Luvion1/mire/config"
 )
 
 // TestNewRotator tests creating a new Rotator

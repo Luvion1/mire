@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Lunar-Chipter/mire/core"
-	"github.com/Lunar-Chipter/mire/util"
+	"github.com/Luvion1/mire/core"
+	"github.com/Luvion1/mire/util"
 )
 
 // TestNewCSVFormatter tests creating a new CSVFormatter

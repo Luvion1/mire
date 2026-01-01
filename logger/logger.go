@@ -11,14 +11,14 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/Lunar-Chipter/mire/config"
-	"github.com/Lunar-Chipter/mire/core"
-	"github.com/Lunar-Chipter/mire/formatter"
-	"github.com/Lunar-Chipter/mire/hook"
-	"github.com/Lunar-Chipter/mire/metric"
-	"github.com/Lunar-Chipter/mire/sampler"
-	"github.com/Lunar-Chipter/mire/util"
-	"github.com/Lunar-Chipter/mire/writer"
+	"github.com/Luvion1/mire/config"
+	"github.com/Luvion1/mire/core"
+	"github.com/Luvion1/mire/formatter"
+	"github.com/Luvion1/mire/hook"
+	"github.com/Luvion1/mire/metric"
+	"github.com/Luvion1/mire/sampler"
+	"github.com/Luvion1/mire/util"
+	"github.com/Luvion1/mire/writer"
 )
 
 const (

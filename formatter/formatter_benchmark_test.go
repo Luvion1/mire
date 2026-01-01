@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Lunar-Chipter/mire/core"
+	"github.com/Luvion1/mire/core"
 )
 
 // BenchmarkCSVFormatter benchmarks the CSV formatter

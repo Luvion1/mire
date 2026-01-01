@@ -4,9 +4,9 @@ import (
 	"context"
 	"os"
 
-	"github.com/Lunar-Chipter/mire/core"
-	"github.com/Lunar-Chipter/mire/formatter"
-	"github.com/Lunar-Chipter/mire/logger"
+	"github.com/Luvion1/mire/core"
+	"github.com/Luvion1/mire/formatter"
+	"github.com/Luvion1/mire/logger"
 )
 
 type key string

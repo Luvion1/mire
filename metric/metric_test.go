@@ -5,7 +5,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/Lunar-Chipter/mire/core"
+	"github.com/Luvion1/mire/core"
 )
 
 // TestNewMetrics tests creating a new Metrics

@@ -1,7 +1,7 @@
 package util
 
 import (
-	"github.com/Lunar-Chipter/mire/core"
+	"github.com/Luvion1/mire/core"
 	"path/filepath"
 	"runtime"
 	"strings"

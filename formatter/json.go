@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"strconv"
 
-	"github.com/Lunar-Chipter/mire/core"
-	"github.com/Lunar-Chipter/mire/util"
+	"github.com/Luvion1/mire/core"
+	"github.com/Luvion1/mire/util"
 )
 
 // to

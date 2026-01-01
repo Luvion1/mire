@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Lunar-Chipter/mire/core"
-	"github.com/Lunar-Chipter/mire/formatter"
-	"github.com/Lunar-Chipter/mire/util"
+	"github.com/Luvion1/mire/core"
+	"github.com/Luvion1/mire/formatter"
+	"github.com/Luvion1/mire/util"
 )
 
 // at

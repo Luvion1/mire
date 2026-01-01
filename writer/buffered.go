@@ -1,7 +1,7 @@
 package writer
 
 import (
-	"github.com/Lunar-Chipter/mire/util"
+	"github.com/Luvion1/mire/util"
 	"io"
 	"os"
 	"sync"

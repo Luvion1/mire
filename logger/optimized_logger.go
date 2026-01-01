@@ -8,8 +8,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/Lunar-Chipter/mire/core"
-	"github.com/Lunar-Chipter/mire/formatter"
+	"github.com/Luvion1/mire/core"
+	"github.com/Luvion1/mire/formatter"
 )
 
 // OptimizedLogger is an efficient logger version for minimal allocations

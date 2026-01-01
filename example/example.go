@@ -4,9 +4,9 @@ package example
 import (
 	"context"
 
-	"github.com/Lunar-Chipter/mire/core"
-	"github.com/Lunar-Chipter/mire/logger"
-	"github.com/Lunar-Chipter/mire/util"
+	"github.com/Luvion1/mire/core"
+	"github.com/Luvion1/mire/logger"
+	"github.com/Luvion1/mire/util"
 )
 
 // BasicExample demonstrates simple logging with Mire

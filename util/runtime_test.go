@@ -4,7 +4,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/Lunar-Chipter/mire/core"
+	"github.com/Luvion1/mire/core"
 )
 
 // TestGetCallerInfo tests the GetCallerInfo function
@@ -33,7 +33,7 @@ func TestGetCallerInfo(t *testing.T) {
 
 	// The function name should contain "TestGetCallerInfo"
 	if got := callerInfo.Function; got != "TestGetCallerInfo" &&
-		got != "github.com/Lunar-Chipter/mire/util.TestGetCallerInfo" {
+		got != "github.com/Luvion1/mire/util.TestGetCallerInfo" {
 		t.Logf("Function name is %s, which might be different based on implementation", got)
 	}
 }

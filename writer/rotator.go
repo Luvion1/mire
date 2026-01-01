@@ -4,7 +4,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/Lunar-Chipter/mire/config"
+	"github.com/Luvion1/mire/config"
 )
 
 // Rotator provides a file writer that rotates logs.

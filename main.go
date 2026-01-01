@@ -7,11 +7,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/Lunar-Chipter/mire/core"
-	"github.com/Lunar-Chipter/mire/formatter"
-	"github.com/Lunar-Chipter/mire/log"
-	"github.com/Lunar-Chipter/mire/logger"
-	"github.com/Lunar-Chipter/mire/util"
+	"github.com/Luvion1/mire/core"
+	"github.com/Luvion1/mire/formatter"
+	"github.com/Luvion1/mire/log"
+	"github.com/Luvion1/mire/logger"
+	"github.com/Luvion1/mire/util"
 )
 
 // wrappedError wraps an error with a message

@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Lunar-Chipter/mire/core"
+	"github.com/Luvion1/mire/core"
 )
 
 // BenchmarkFormatValue benchmarks the FormatValue function

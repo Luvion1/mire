@@ -7,8 +7,8 @@
 ![Status](https://img.shields.io/badge/Status-Stable-brightgreen.svg)
 ![Build](https://img.shields.io/badge/Build-Passing-brightgreen.svg)
 ![Maintained](https://img.shields.io/badge/Maintained-Yes-blue.svg)
-[![Go Reference](https://pkg.go.dev/badge/github.com/Lunar-Chipter/mire.svg)](https://pkg.go.dev/github.com/Lunar-Chipter/mire)
-[![Version](https://img.shields.io/badge/Version-v0.0.6-blue.svg)](https://github.com/Lunar-Chipter/mire/releases)
+[![Go Reference](https://pkg.go.dev/badge/github.com/Luvion1/mire.svg)](https://pkg.go.dev/github.com/Luvion1/mire)
+[![Version](https://img.shields.io/badge/Version-v0.0.6-blue.svg)](https://github.com/Luvion1/mire/releases)
 
 <p align="center">
   <img src="https://github.com/egonelbre/gophers/blob/master/.thumb/animation/gopher-dance-long-3x.gif" alt="Gopher Logo" width="150" />
@@ -88,21 +88,21 @@
 
 ```bash
 # Add to your project
-go get github.com/Lunar-Chipter/mire
+go get github.com/Luvion1/mire
 
 # Or add to your go.mod file directly
 go mod init your-project
-go get github.com/Lunar-Chipter/mire
+go get github.com/Luvion1/mire
 ```
 
 ### Version Management
 
 ```bash
 # Use a specific version
-go get github.com/Lunar-Chipter/mire@v1.0.0
+go get github.com/Luvion1/mire@v1.0.0
 
 # Use the latest version
-go get -u github.com/Lunar-Chipter/mire
+go get -u github.com/Luvion1/mire
 ```
 
 ## ⚡ Quick Start
@@ -125,7 +125,7 @@ package main
 
 import (
     "context"
-    "github.com/Lunar-Chipter/mire/log"
+    "github.com/Luvion1/mire/log"
 )
 
 func main() {
@@ -206,9 +206,9 @@ package main
 import (
     "context"
     "os"
-    "github.com/Lunar-Chipter/mire/core"
-    "github.com/Lunar-Chipter/mire/formatter"
-    "github.com/Lunar-Chipter/mire/logger"
+    "github.com/Luvion1/mire/core"
+    "github.com/Luvion1/mire/formatter"
+    "github.com/Luvion1/mire/logger"
 )
 
 func main() {
@@ -250,10 +250,10 @@ package main
 
 import (
     "context"
-    "github.com/Lunar-Chipter/mire/core"
-    "github.com/Lunar-Chipter/mire/formatter"
-    "github.com/Lunar-Chipter/mire/log"
-    "github.com/Lunar-Chipter/mire/logger"
+    "github.com/Luvion1/mire/core"
+    "github.com/Luvion1/mire/formatter"
+    "github.com/Luvion1/mire/log"
+    "github.com/Luvion1/mire/logger"
 )
 
 func main() {
@@ -573,11 +573,11 @@ package main
 
 import (
     "context"
-    "github.com/Lunar-Chipter/mire/core"
-    "github.com/Lunar-Chipter/mire/formatter"
-    "github.com/Lunar-Chipter/mire/log"
-    "github.com/Lunar-Chipter/mire/logger"
-    "github.com/Lunar-Chipter/mire/util"
+    "github.com/Luvion1/mire/core"
+    "github.com/Luvion1/mire/formatter"
+    "github.com/Luvion1/mire/log"
+    "github.com/Luvion1/mire/logger"
+    "github.com/Luvion1/mire/util"
 )
 
 func main() {
@@ -624,9 +624,9 @@ package main
 
 import (
     "os"
-    "github.com/Lunar-Chipter/mire/core"
-    "github.com/Lunar-Chipter/mire/formatter"
-    "github.com/Lunar-Chipter/mire/logger"
+    "github.com/Luvion1/mire/core"
+    "github.com/Luvion1/mire/formatter"
+    "github.com/Luvion1/mire/logger"
 )
 
 func main() {
@@ -833,7 +833,7 @@ func conditionalLog(ctx context.Context) {
 ### Custom Metrics Integration
 
 ```go
-import "github.com/Lunar-Chipter/mire/metric"
+import "github.com/Luvion1/mire/metric"
 
 // Create a custom metrics collector
 customMetrics := metric.NewDefaultMetricsCollector()
@@ -937,8 +937,8 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 Need help? Join our community:
 
-- Issues: [GitHub Issues](https://github.com/Lunar-Chipter/mire/issues)
-- Discussions: [GitHub Discussions](https://github.com/Lunar-Chipter/mire/discussions)
+- Issues: [GitHub Issues](https://github.com/Luvion1/mire/issues)
+- Discussions: [GitHub Discussions](https://github.com/Luvion1/mire/discussions)
 
 ## 📄 Changelog
 

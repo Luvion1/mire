@@ -5,7 +5,7 @@ import (
 	"strconv" // Re-added strconv import
 	"time"
 
-	"github.com/Lunar-Chipter/mire/core"
+	"github.com/Luvion1/mire/core"
 )
 
 func FormatValue(buf *bytes.Buffer, value interface{}, maxWidth int) {

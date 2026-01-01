@@ -4,7 +4,7 @@ import (
 	"bytes" // Added for bytes.EqualFold
 	"strings"
 
-	"github.com/Lunar-Chipter/mire/errors"
+	"github.com/Luvion1/mire/errors"
 	"unsafe"
 )
 

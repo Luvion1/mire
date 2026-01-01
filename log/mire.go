@@ -3,8 +3,8 @@ package log
 import (
 	"context"
 
-	"github.com/Lunar-Chipter/mire/core"
-	"github.com/Lunar-Chipter/mire/logger"
+	"github.com/Luvion1/mire/core"
+	"github.com/Luvion1/mire/logger"
 )
 
 // defaultLogger is the default logger instance

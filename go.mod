@@ -1,4 +1,4 @@
-module github.com/Lunar-Chipter/mire
+module github.com/Luvion1/mire
 
 go 1.25
 

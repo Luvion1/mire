@@ -2,7 +2,7 @@ package sampler
 
 import (
 	"context"
-	"github.com/Lunar-Chipter/mire/core"
+	"github.com/Luvion1/mire/core"
 	"sync/atomic"
 )
 

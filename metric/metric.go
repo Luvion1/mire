@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Lunar-Chipter/mire/core"
+	"github.com/Luvion1/mire/core"
 )
 
 // Collector interface defines methods for collecting metrics

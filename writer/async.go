@@ -2,9 +2,9 @@ package writer
 
 import (
 	"context"
-	"github.com/Lunar-Chipter/mire/core"
-	"github.com/Lunar-Chipter/mire/errors"
-	"github.com/Lunar-Chipter/mire/util"
+	"github.com/Luvion1/mire/core"
+	"github.com/Luvion1/mire/errors"
+	"github.com/Luvion1/mire/util"
 	"io"
 	"runtime"
 	"sync"

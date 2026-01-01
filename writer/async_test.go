@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Lunar-Chipter/mire/core"
-	"github.com/Lunar-Chipter/mire/errors"
+	"github.com/Luvion1/mire/core"
+	"github.com/Luvion1/mire/errors"
 )
 
 // mockLogProcessor implements LogProcessor interface for testing
