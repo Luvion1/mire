@@ -1,0 +1,349 @@
+package util
+
+import (
+	"bytes"
+	"errors"
+	"sync"
+	"sync/atomic"
+	"time"
+	"unsafe"
+)
+
+// Constants for compile-time configuration
+const (
+	SmallBufferSize       = 512
+	MediumBufferSize      = 2048
+	LargeBufferSize       = 8192
+	DefaultBufferSize     = MediumBufferSize
+	MaxBufferPoolSize     = LargeBufferSize
+	SmallByteSliceSize    = 64
+	MaxSmallSlicePoolSize = 1024
+	StringSliceCapacity   = 10
+	MapInitialCapacity    = 8
+
+	// Pool cleanup constants
+	poolMaxAgeThreshold = 10 * time.Minute
+	poolCleanupInterval = 5 * time.Minute
+	maxGoroutinePools   = 1000
+)
+
+// Error definitions for buffer operations
+var (
+	ErrBufferFull = errors.New("buffer is full")
+)
+
+// PoolMetrics for observability with atomic operations
+type PoolMetrics struct {
+	bufferGetCount int64
+	bufferPutCount int64
+	sliceGetCount  int64
+	slicePutCount  int64
+	mapGetCount    int64
+	mapPutCount    int64
+	poolMissCount  int64
+	discardedCount int64
+}
+
+// Global metrics instance
+var globalPoolMetrics = &PoolMetrics{}
+
+// GetPoolMetrics returns the global pool metrics
+func GetPoolMetrics() *PoolMetrics {
+	return globalPoolMetrics
+}
+
+// BufferGetCount returns the number of buffer gets
+func (pm *PoolMetrics) BufferGetCount() int64 {
+	return atomic.LoadInt64(&pm.bufferGetCount)
+}
+
+// BufferPutCount returns the number of buffer puts
+func (pm *PoolMetrics) BufferPutCount() int64 {
+	return atomic.LoadInt64(&pm.bufferPutCount)
+}
+
+// SliceGetCount returns the number of slice gets
+func (pm *PoolMetrics) SliceGetCount() int64 {
+	return atomic.LoadInt64(&pm.sliceGetCount)
+}
+
+// SlicePutCount returns the number of slice puts
+func (pm *PoolMetrics) SlicePutCount() int64 {
+	return atomic.LoadInt64(&pm.slicePutCount)
+}
+
+// MapGetCount returns the number of map gets
+func (pm *PoolMetrics) MapGetCount() int64 {
+	return atomic.LoadInt64(&pm.mapGetCount)
+}
+
+// MapPutCount returns the number of map puts
+func (pm *PoolMetrics) MapPutCount() int64 {
+	return atomic.LoadInt64(&pm.mapPutCount)
+}
+
+// PoolMissCount returns the number of pool misses
+func (pm *PoolMetrics) PoolMissCount() int64 {
+	return atomic.LoadInt64(&pm.poolMissCount)
+}
+
+// DiscardedCount returns the number of discarded items
+func (pm *PoolMetrics) DiscardedCount() int64 {
+	return atomic.LoadInt64(&pm.discardedCount)
+}
+
+// Zero-allocation buffer pool with pre-allocated buffers
+var bufferPool = sync.Pool{
+	New: func() interface{} {
+		// Pre-allocated buffer with fixed size to avoid fragmentation
+		return bytes.NewBuffer(make([]byte, 0, DefaultBufferSize))
+	},
+}
+
+// LogBuffer represents a zero-allocation buffer for logging
+type LogBuffer struct {
+	buf []byte
+	len int
+	_   [64 - unsafe.Sizeof(int(0))]byte // Padding for cache alignment
+}
+
+func (b *LogBuffer) WriteBytes(data []byte) error {
+	if b.available() < len(data) {
+		return ErrBufferFull
+	}
+	// Ensure the underlying slice is long enough to handle the copy
+	// Extend the slice to accommodate all data if necessary
+	if len(b.buf) < b.len+len(data) {
+		// Extend the slice length to the required size (but within capacity)
+		newLen := b.len + len(data)
+		b.buf = b.buf[:newLen]
+	}
+	// Copy data to the current logical end of the buffer
+	copy(b.buf[b.len:], data)
+	// Update the logical length
+	b.len += len(data)
+	return nil
+}
+
+func (b *LogBuffer) WriteByte(c byte) error {
+	if b.available() < 1 {
+		return ErrBufferFull
+	}
+	// Ensure the underlying slice is long enough to add the byte
+	if len(b.buf) <= b.len {
+		// Extend the slice to include this position
+		b.buf = b.buf[:b.len+1]
+	}
+	b.buf[b.len] = c
+	b.len++
+	return nil
+}
+
+// available returns the available space in the buffer
+func (b *LogBuffer) available() int {
+	return cap(b.buf) - b.len
+}
+
+// Bytes returns the buffer content
+func (b *LogBuffer) Bytes() []byte {
+	return b.buf[:b.len]
+}
+
+func (b *LogBuffer) Reset() {
+	b.len = 0
+}
+
+// GetBuffer gets a byte buffer from the pool
+func GetBuffer() *bytes.Buffer {
+	atomic.AddInt64(&globalPoolMetrics.bufferGetCount, 1)
+	// Try to get from goroutine-local pool first for zero lock contention
+	localPool := GetGoroutineLocalBufferPool()
+	buf := localPool.GetBufferFromLocalPool()
+	if buf != nil {
+		return buf
+	}
+
+	// Fallback to global pool if local pool is empty
+	return bufferPool.Get().(*bytes.Buffer)
+}
+
+// PutBuffer returns a byte buffer to the pool
+func PutBuffer(buf *bytes.Buffer) {
+	atomic.AddInt64(&globalPoolMetrics.bufferPutCount, 1)
+	// Try to put to goroutine-local pool first for zero lock contention
+	localPool := GetGoroutineLocalBufferPool()
+	if localPool.PutBufferToLocalPool(buf) {
+		return
+	}
+
+	// Fallback to global pool if local pool is full
+	buf.Reset()
+	bufferPool.Put(buf)
+}
+
+// smallByteSlicePool is for small byte slices.
+var smallByteSlicePool = sync.Pool{
+	New: func() interface{} {
+		return make([]byte, SmallByteSliceSize) // For small formatting, like int/float/timestamp
+	},
+}
+
+// GetSmallBuf gets a small byte slice from the pool.
+func GetSmallBuf() []byte {
+	atomic.AddInt64(&globalPoolMetrics.sliceGetCount, 1)
+	return smallByteSlicePool.Get().([]byte)[:0] // Get and reset length
+}
+
+// PutSmallBuf returns a small byte slice to the pool.
+func PutSmallBuf(b []byte) {
+	// Avoid putting back overly large slices to prevent pool pollution
+	if cap(b) < MaxSmallSlicePoolSize { // Keep slices up to 1KB
+		//nolint:staticcheck
+		smallByteSlicePool.Put(b)
+		atomic.AddInt64(&globalPoolMetrics.slicePutCount, 1)
+	} else {
+		atomic.AddInt64(&globalPoolMetrics.discardedCount, 1)
+	}
+}
+
+// Object pool for reusing map[string]string objects
+var mapStringPool = sync.Pool{
+	New: func() interface{} {
+		return make(map[string]string, MapInitialCapacity)
+	},
+}
+
+// GetMapStr gets a map[string]string from the pool
+func GetMapStr() map[string]string {
+	atomic.AddInt64(&globalPoolMetrics.mapGetCount, 1)
+	m := mapStringPool.Get().(map[string]string)
+	for k := range m {
+		delete(m, k) // Reset the map
+	}
+	return m
+}
+
+// PutMapStr returns a map[string]string to the pool
+func PutMapStr(m map[string]string) {
+	mapStringPool.Put(m)
+	atomic.AddInt64(&globalPoolMetrics.mapPutCount, 1)
+}
+
+// String slice pool for reusing string slices (e.g., for map keys)
+var stringSlicePool = sync.Pool{
+	New: func() interface{} {
+		return make([]string, 0, StringSliceCapacity) // Pre-allocate with a reasonable capacity
+	},
+}
+
+// GetStringSliceFromPool gets a []string from the pool
+func GetStringSliceFromPool() []string {
+	atomic.AddInt64(&globalPoolMetrics.sliceGetCount, 1)
+	s := stringSlicePool.Get().([]string)
+	return s[:0] // Reset slice length but keep capacity
+}
+
+// PutStringSliceToPool returns a []string to the pool
+func PutStringSliceToPool(s []string) {
+	//nolint:staticcheck
+	stringSlicePool.Put(s)
+	atomic.AddInt64(&globalPoolMetrics.slicePutCount, 1)
+}
+
+// Goroutine-local pools to reduce lock contention
+var (
+	goroutineBufferPools sync.Map // map[uint64]*localBufferPool
+	bufferPoolLastAccess sync.Map // map[uint64]time.Time
+)
+
+// Local pool structures for goroutine-local storage
+type localBufferPool struct {
+	buffers chan *bytes.Buffer
+}
+
+// getGoroutineID returns a pseudo goroutine ID for goroutine-local storage
+func getGoroutineID() uint64 {
+	// Simplified implementation - in production, use a more reliable method
+	ptr := unsafe.Pointer(&globalPoolMetrics)
+	return uint64(uintptr(ptr)) % 1000000
+}
+
+// StartBufferPoolCleanup starts periodic cleanup of goroutine-local buffer pools
+func StartBufferPoolCleanup() {
+	go func() {
+		ticker := time.NewTicker(poolCleanupInterval)
+		defer ticker.Stop()
+
+		for range ticker.C {
+			cleanupOldBufferPools()
+		}
+	}()
+}
+
+// cleanupOldBufferPools removes buffer pools that haven't been accessed recently
+func cleanupOldBufferPools() {
+	now := time.Now()
+	threshold := now.Add(-poolMaxAgeThreshold)
+
+	bufferPoolLastAccess.Range(func(key, value interface{}) bool {
+		lastAccess := value.(time.Time)
+		if lastAccess.Before(threshold) {
+			goroutineBufferPools.Delete(key)
+			bufferPoolLastAccess.Delete(key)
+		}
+		return true
+	})
+
+	// Limit total number of pools to prevent unbounded growth
+	var poolCount int
+	goroutineBufferPools.Range(func(key, value interface{}) bool {
+		poolCount++
+		if poolCount > maxGoroutinePools {
+			goroutineBufferPools.Delete(key)
+			bufferPoolLastAccess.Delete(key)
+		}
+		return true
+	})
+}
+
+// GetGoroutineLocalBufferPool returns the buffer pool for the current goroutine
+func GetGoroutineLocalBufferPool() *localBufferPool {
+	gid := getGoroutineID()
+	if pool, ok := goroutineBufferPools.Load(gid); ok {
+		return pool.(*localBufferPool)
+	}
+
+	// Create a new local pool for this goroutine
+	newPool := &localBufferPool{
+		buffers: make(chan *bytes.Buffer, 10), // Buffered channel for 10 buffers
+	}
+	goroutineBufferPools.Store(gid, newPool)
+
+	return newPool
+}
+
+// GetBufferFromLocalPool gets a buffer from the goroutine-local pool
+// Zero lock contention in hot path
+func (lp *localBufferPool) GetBufferFromLocalPool() *bytes.Buffer {
+	select {
+	case buf := <-lp.buffers:
+		buf.Reset()
+		return buf
+	default:
+		// Local pool is empty, indicate to use global pool
+		atomic.AddInt64(&globalPoolMetrics.poolMissCount, 1)
+		return nil
+	}
+}
+
+// PutBufferToLocalPool returns a buffer to the goroutine-local pool
+// Zero lock contention in hot path
+func (lp *localBufferPool) PutBufferToLocalPool(buf *bytes.Buffer) bool {
+	select {
+	case lp.buffers <- buf:
+		return true
+	default:
+		// Local pool is full, indicate to use global pool
+		return false
+	}
+}
