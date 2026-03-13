@@ -942,6 +942,24 @@ Need help? Join our community:
 
 ## 📄 Changelog
 
+### v0.1.0 - Zero-Allocation Performance Release
+
+- **Major Performance Improvements**:
+  - Zero-allocation logging paths for high-throughput scenarios
+  - Stack-allocated JSON serialization (256 byte initial capacity)
+  - Goroutine-local buffer pools to reduce lock contention
+  - Optimized timestamp formatting without time.Format()
+  - ContextValues pool for zero-allocation context extraction
+
+- **API Improvements**:
+  - Simplified pool function names (GetEntry, PutEntry, etc.)
+  - NoClock config option for clock optimization control
+  - Early-return guards for closed logger and level filtering
+
+- **Bug Fixes**:
+  - JSON formatter comma handling for UserID field
+  - Race condition in writeZero function (keyvals copying)
+
 ### v0.0.4 - Zero-Allocation Redesign and Test Suite Fixes
 
 - **Major Enhancement**: Complete internal redesign with []byte fields to eliminate string conversion overhead
