@@ -8,7 +8,7 @@
 ![Build](https://img.shields.io/badge/Build-Passing-brightgreen.svg)
 ![Maintained](https://img.shields.io/badge/Maintained-Yes-blue.svg)
 [![Go Reference](https://pkg.go.dev/badge/github.com/Luvion1/mire.svg)](https://pkg.go.dev/github.com/Luvion1/mire)
-[![Version](https://img.shields.io/badge/Version-v0.0.6-blue.svg)](https://github.com/Luvion1/mire/releases)
+[![Version](https://img.shields.io/badge/Version-v0.1.0-blue.svg)](https://github.com/Luvion1/mire/releases)
 
 <p align="center">
   <img src="https://github.com/egonelbre/gophers/blob/master/.thumb/animation/gopher-dance-long-3x.gif" alt="Gopher Logo" width="150" />
