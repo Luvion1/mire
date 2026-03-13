@@ -4,6 +4,7 @@ import (
 	"bytes"
 
 	"github.com/Luvion1/mire/core"
+	"github.com/Luvion1/mire/errors"
 	"github.com/Luvion1/mire/util"
 )
 
@@ -118,14 +119,14 @@ func (f *CSVFormatter) writeCSVValueBytes(buf *bytes.Buffer, value []byte) {
 func (f *CSVFormatter) formatCSVField(buf *bytes.Buffer, field string, entry *core.LogEntry) error {
 	switch field {
 	case "timestamp":
-		timestamp := util.GetBuffer()
+		timestamp := util.GetBuf()
 		format := f.TimestampFormat
 		if format == "" {
 			format = "2006-01-02 15:04:05.000"
 		}
 		util.FormatTimestamp(timestamp, entry.Timestamp, format)
 		f.writeCSVValueBytes(buf, timestamp.Bytes())
-		util.PutBuffer(timestamp)
+		util.PutBuf(timestamp)
 	case "level":
 		f.writeCSVValueBytes(buf, entry.Level.Bytes())
 	case "message":
@@ -162,7 +163,7 @@ func (f *CSVFormatter) formatCSVField(buf *bytes.Buffer, field string, entry *co
 		}
 	case "error":
 		if entry.Error != nil {
-			if appender, ok := entry.Error.(core.ErrAppend); ok {
+			if appender, ok := entry.Error.(errors.ErrAppend); ok {
 				buf.WriteByte('"')
 				appender.AppendError(buf)
 				buf.WriteByte('"')
@@ -174,7 +175,26 @@ func (f *CSVFormatter) formatCSVField(buf *bytes.Buffer, field string, entry *co
 			buf.WriteByte('"')
 		}
 	default:
-		if val, exists := entry.Fields[field]; exists {
+		var val []byte
+		var exists bool
+		if entry.Fields != nil {
+			val, exists = entry.Fields[field]
+		}
+		
+		if !exists && len(entry.KeyVals) > 0 {
+			for i := 0; i < len(entry.KeyVals); i += 2 {
+				if i+1 >= len(entry.KeyVals) {
+					break
+				}
+				if string(entry.KeyVals[i]) == field {
+					val = entry.KeyVals[i+1]
+					exists = true
+					break
+				}
+			}
+		}
+
+		if exists {
 			if f.MaskSensitiveData && f.isSensitiveField(field) {
 				f.writeCSVValue(buf, f.MaskValue)
 				return nil

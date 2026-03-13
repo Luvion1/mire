@@ -5,6 +5,12 @@ import (
 	"sync"
 )
 
+// ErrAppend is an optional interface that errors can implement to write
+// their error message directly to a bytes.Buffer, avoiding intermediate string allocations.
+type ErrAppend interface {
+	AppendError(buf *bytes.Buffer)
+}
+
 // InvalidLevel is a custom error type for invalid log levels
 type InvalidLevel struct {
 	level string

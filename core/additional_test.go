@@ -19,7 +19,7 @@ func TestConcurrentPoolOperations(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			for j := 0; j < operationsPerGoroutine; j++ {
-				entry := GetEntryFromPool()
+				entry := GetEntry()
 
 				// Set some values to ensure proper reset
 				entry.Timestamp = time.Now()
@@ -30,7 +30,7 @@ func TestConcurrentPoolOperations(t *testing.T) {
 				// Use the entry (simulated)
 				_ = entry.LevelName
 
-				PutEntryToPool(entry)
+				PutEntry(entry)
 			}
 		}()
 	}
@@ -50,7 +50,7 @@ func TestConcurrentPoolOperations(t *testing.T) {
 // TestGoroutineLocalPoolUsage tests the usage of goroutine-local pools
 func TestGoroutineLocalPoolUsage(t *testing.T) {
 	// Get entry from local pool (simulated through regular function)
-	entry := GetEntryFromPool()
+	entry := GetEntry()
 
 	if entry == nil {
 		t.Fatal("Entry should not be nil")
@@ -64,7 +64,7 @@ func TestGoroutineLocalPoolUsage(t *testing.T) {
 		t.Error("Timestamp should be zero after pool retrieval")
 	}
 
-	PutEntryToPool(entry)
+	PutEntry(entry)
 }
 
 // TestCoreMetricsConcurrentUpdate tests concurrent updates to metrics
@@ -125,8 +125,8 @@ func TestEntryFormatLogToBytesConcurrent(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			for j := 0; j < operations; j++ {
-				entry := GetEntryFromPool()
-				defer PutEntryToPool(entry)
+				entry := GetEntry()
+				defer PutEntry(entry)
 
 				entry.Timestamp = time.Now()
 				entry.Level = INFO
@@ -163,18 +163,18 @@ func TestPoolReuseEfficiency(t *testing.T) {
 
 	// First, create all entries (this will initially create them)
 	for i := 0; i < totalEntries; i++ {
-		entries[i] = GetEntryFromPool()
+		entries[i] = GetEntry()
 	}
 
 	// Then return them all to the pool
 	for i := 0; i < totalEntries; i++ {
-		PutEntryToPool(entries[i])
+		PutEntry(entries[i])
 	}
 
 	// Now get them again - these should be reused from the pool
 	for i := 0; i < totalEntries; i++ {
-		entry := GetEntryFromPool()
-		PutEntryToPool(entry)
+		entry := GetEntry()
+		PutEntry(entry)
 	}
 
 	// The number of created entries should be around the number of unique needs, not total operations
@@ -192,8 +192,8 @@ func TestPoolReuseEfficiency(t *testing.T) {
 
 // TestEntryFieldManipulation tests manipulation of fields within entries
 func TestEntryFieldManipulation(t *testing.T) {
-	entry := GetEntryFromPool()
-	defer PutEntryToPool(entry)
+	entry := GetEntry()
+	defer PutEntry(entry)
 
 	// Add various types of fields
 	entry.Fields["string_val"] = []byte("hello")
@@ -222,15 +222,15 @@ func TestEntryFieldManipulation(t *testing.T) {
 
 // TestEntryWithAllFields tests creating an entry with all possible fields populated
 func TestEntryWithAllFields(t *testing.T) {
-	entry := GetEntryFromPool()
-	defer PutEntryToPool(entry)
+	entry := GetEntry()
+	defer PutEntry(entry)
 
 	// Populate all fields
 	entry.Timestamp = time.Date(2023, 8, 15, 14, 30, 0, 0, time.UTC)
 	entry.Level = DEBUG
 	entry.LevelName = []byte("DEBUG")
 	entry.Message = []byte("complete test message")
-	entry.Caller = GetCallerFromPool()
+	entry.Caller = GetCaller()
 	entry.Caller.File = "test.go"
 	entry.Caller.Line = 100
 	entry.Caller.Function = "CompleteTest"

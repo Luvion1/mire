@@ -1,7 +1,6 @@
 package core
 
 import (
-	"bytes"
 	"runtime"
 	"strconv"
 	"strings"
@@ -45,8 +44,16 @@ func (e *LogEntry) Reset() {
 	e.Message = nil
 	e.Timestamp = time.Time{}
 	e.Caller = nil
-	e.Fields = nil
-	e.KeyVals = nil
+	if e.Fields == nil {
+		e.Fields = make(map[string][]byte)
+	} else {
+		clearMap(e.Fields)
+	}
+	if e.KeyVals == nil {
+		e.KeyVals = make([][]byte, 0)
+	} else {
+		e.KeyVals = e.KeyVals[:0]
+	}
 	e.TraceID = nil
 	e.SpanID = nil
 	e.UserID = nil
@@ -56,8 +63,16 @@ func (e *LogEntry) Reset() {
 	e.Application = nil
 	e.Version = nil
 	e.Environment = nil
-	e.CustomMetrics = nil
-	e.Tags = nil
+	if e.CustomMetrics == nil {
+		e.CustomMetrics = make(map[string]float64)
+	} else {
+		clearFloatMap(e.CustomMetrics)
+	}
+	if e.Tags == nil {
+		e.Tags = make([][]byte, 0)
+	} else {
+		e.Tags = e.Tags[:0]
+	}
 	e.Duration = 0
 	e.Error = nil
 	e.StackTrace = nil
@@ -82,13 +97,13 @@ var callerInfoPool = sync.Pool{
 	},
 }
 
-// GetCallerFromPool gets a Caller from the pool
-func GetCallerFromPool() *Caller {
+// GetCaller gets a Caller from the pool
+func GetCaller() *Caller {
 	return callerInfoPool.Get().(*Caller)
 }
 
-// PutCallerToPool returns a Caller to the pool
-func PutCallerToPool(ci *Caller) {
+// PutCaller returns a Caller to the pool
+func PutCaller(ci *Caller) {
 	// Reset fields to avoid data leakage
 	ci.File = ""
 	ci.Line = 0
@@ -104,8 +119,8 @@ var mapFloatPool = sync.Pool{
 	},
 }
 
-// GetMapFloatFromPool gets a map[string]float64 from the pool
-func GetMapFloatFromPool() map[string]float64 {
+// GetMapFloat gets a map[string]float64 from the pool
+func GetMapFloat() map[string]float64 {
 	m := mapFloatPool.Get().(map[string]float64)
 	for k := range m {
 		delete(m, k) // Reset the map
@@ -113,8 +128,8 @@ func GetMapFloatFromPool() map[string]float64 {
 	return m
 }
 
-// PutMapFloatToPool returns a map[string]float64 to the pool
-func PutMapFloatToPool(m map[string]float64) {
+// PutMapFloat returns a map[string]float64 to the pool
+func PutMapFloat(m map[string]float64) {
 	mapFloatPool.Put(m)
 }
 
@@ -125,8 +140,8 @@ var mapBytePool = sync.Pool{
 	},
 }
 
-// GetMapByteFromPool gets a map[string][]byte from the pool
-func GetMapByteFromPool() map[string][]byte {
+// GetMapByte gets a map[string][]byte from the pool
+func GetMapByte() map[string][]byte {
 	m := mapBytePool.Get().(map[string][]byte)
 	for k := range m {
 		delete(m, k) // Reset the map
@@ -134,8 +149,8 @@ func GetMapByteFromPool() map[string][]byte {
 	return m
 }
 
-// PutMapByteToPool returns a map[string][]byte to the pool
-func PutMapByteToPool(m map[string][]byte) {
+// PutMapByte returns a map[string][]byte to the pool
+func PutMapByte(m map[string][]byte) {
 	mapBytePool.Put(m)
 }
 
@@ -155,27 +170,27 @@ var bufferPool = sync.Pool{
 	},
 }
 
-// GetBuffer gets a byte buffer from the pool
-func GetBuffer() *[]byte {
+// GetBuf gets a byte buffer from the pool
+func GetBuf() *[]byte {
 	buf := bufferPool.Get().(*[]byte)
 	*buf = (*buf)[:0] // Reset length but keep capacity
 	return buf
 }
 
-// PutBuffer returns a byte buffer to the pool
-func PutBuffer(buf *[]byte) {
+// PutBuf returns a byte buffer to the pool
+func PutBuf(buf *[]byte) {
 	bufferPool.Put(buf)
 }
 
-// GetStringSliceFromPool gets a string slice from the pool
-func GetStringSliceFromPool() *[]string {
+// GetStringSlice gets a string slice from the pool
+func GetStringSlice() *[]string {
 	s := stringSlicePool.Get().(*[]string)
 	*s = (*s)[:0] // to
 	return s
 }
 
-// PutStringSliceToPool returns a string slice to the pool
-func PutStringSliceToPool(s *[]string) {
+// PutStringSlice returns a string slice to the pool
+func PutStringSlice(s *[]string) {
 	stringSlicePool.Put(s)
 }
 
@@ -229,14 +244,14 @@ func clearByteSliceSlice(s [][]byte) [][]byte {
 // Object pool for reusing LogEntry objects
 var entryPool = sync.Pool{
 	New: func() interface{} {
-		tags := GetStringSliceFromPool()
+		tags := GetStringSlice()
 		tagsAsBytes := make([][]byte, 0, len(*tags))
 		for _, tag := range *tags {
 			tagsAsBytes = append(tagsAsBytes, StringToBytes(tag))
 		}
 		return &LogEntry{
-			Fields:        GetMapByteFromPool(),
-			CustomMetrics: GetMapFloatFromPool(),
+			Fields:        GetMapByte(),
+			CustomMetrics: GetMapFloat(),
 			Tags:          tagsAsBytes,
 		}
 	},
@@ -259,8 +274,8 @@ const (
 	MaxOptimizedPathAttempts = 5  // Max attempts to use optimized path before fallback
 )
 
-// GetEntryFromPool gets a LogEntry from the pool
-func GetEntryFromPool() *LogEntry {
+// GetEntry gets a LogEntry from the pool
+func GetEntry() *LogEntry {
 	// Fallback: Use regular goroutine-local pool
 	localPool := GetGoroutineLocalEntryPool()
 	return localPool.GetLocalEntry()
@@ -289,6 +304,7 @@ func GetGlobalEntry() *LogEntry {
 	clearMap(entry.Fields)
 	clearFloatMap(entry.CustomMetrics)
 	entry.Tags = clearByteSliceSlice(entry.Tags)
+	entry.KeyVals = nil
 	entry.PID = 0
 	entry.GoroutineID = nil
 	entry.TraceID = nil
@@ -299,6 +315,7 @@ func GetGlobalEntry() *LogEntry {
 	entry.Duration = 0
 	entry.Error = nil
 	entry.StackTrace = nil
+	entry.StackTraceBufPtr = nil
 	entry.Hostname = nil
 	entry.Application = nil
 	entry.Version = nil
@@ -431,6 +448,7 @@ func (g *LocalPool) GetLocalEntry() *LogEntry {
 		clearMap(entry.Fields)
 		clearFloatMap(entry.CustomMetrics)
 		entry.Tags = clearByteSliceSlice(entry.Tags)
+		entry.KeyVals = nil
 		entry.PID = 0
 		entry.GoroutineID = nil
 		entry.TraceID = nil
@@ -441,6 +459,7 @@ func (g *LocalPool) GetLocalEntry() *LogEntry {
 		entry.Duration = 0
 		entry.Error = nil
 		entry.StackTrace = nil
+		entry.StackTraceBufPtr = nil
 		entry.Hostname = nil
 		entry.Application = nil
 		entry.Version = nil
@@ -457,15 +476,15 @@ func (g *LocalPool) GetLocalEntry() *LogEntry {
 	}
 }
 
-// PutEntryToPool returns a LogEntry to the pool
-func PutEntryToPool(entry *LogEntry) {
+// PutEntry returns a LogEntry to the pool
+func PutEntry(entry *LogEntry) {
 	if entry.Caller != nil {
-		PutCallerToPool(entry.Caller)
+		PutCaller(entry.Caller)
 		entry.Caller = nil
 	}
 	// Return stack trace buffer to pool if it was used
 	if entry.StackTraceBufPtr != nil {
-		PutBuffer(entry.StackTraceBufPtr)
+		PutBuf(entry.StackTraceBufPtr)
 		entry.StackTraceBufPtr = nil
 	}
 	// Use goroutine-local pool if available
@@ -473,26 +492,22 @@ func PutEntryToPool(entry *LogEntry) {
 	localPool.PutLocalEntry(entry)
 }
 
-// ZeroAllocJSONSerialize serializes LogEntry to JSON without allocation
+// ZeroAllocJSONSerialize serializes LogEntry to JSON - optimized with stack allocation
 func (le *LogEntry) ZeroAllocJSONSerialize() []byte {
-	// Get buffer from pool for zero allocation
-	bufPtr := GetBuffer()
-	buf := *bufPtr
+	// Use stack buffer for small allocations (avoid pool contention)
+	var buf []byte
+	const initialCapacity = 256
 
-	// Start with opening brace
+	// Start with stack allocation
+	buf = make([]byte, 0, initialCapacity)
+
 	buf = append(buf, '{')
-
-	// Serialisasi field-field penting
 	buf = le.serializeTimestamp(buf, "timestamp", le.Timestamp)
 	buf = append(buf, ',')
-
-	// Serialize important fields - now LevelName is []byte
 	buf = le.serializeByteSliceField(buf, "level", le.LevelName)
 	buf = append(buf, ',')
-
 	buf = le.serializeByteSliceField(buf, "message", le.Message)
 
-	// Add other fields if any
 	if le.PID != 0 {
 		buf = append(buf, ',')
 		buf = le.serializeIntField(buf, "pid", le.PID)
@@ -503,33 +518,76 @@ func (le *LogEntry) ZeroAllocJSONSerialize() []byte {
 		buf = le.serializeByteSliceField(buf, "goroutine_id", le.GoroutineID)
 	}
 
-	// Close with closing brace
 	buf = append(buf, '}')
-
-	// Save result and return buffer to pool
-	result := make([]byte, len(buf))
-	copy(result, buf)
-
-	// Reset buffer and return to pool
-	*bufPtr = (*bufPtr)[:0]
-	PutBuffer(bufPtr)
-
-	return result
+	return buf
 }
 
-// serializeTimestamp serializes a timestamp field
+// serializeTimestamp serializes a timestamp field - optimized for zero allocation
 func (le *LogEntry) serializeTimestamp(buf []byte, key string, value time.Time) []byte {
 	buf = append(buf, '"')
 	buf = append(buf, key...)
-	buf = append(buf, '"')
+	buf = append(buf, "\":\""...)
+
+	year, month, day := value.Date()
+	hour, min, sec := value.Clock()
+	nsec := value.Nanosecond()
+	_, offset := value.Zone()
+
+	buf = appendInt4Digits(buf, year)
+	buf = append(buf, '-')
+	buf = appendInt2Digits(buf, int(month))
+	buf = append(buf, '-')
+	buf = appendInt2Digits(buf, day)
+	buf = append(buf, 'T')
+	buf = appendInt2Digits(buf, hour)
 	buf = append(buf, ':')
-	buf = append(buf, '"')
+	buf = appendInt2Digits(buf, min)
+	buf = append(buf, ':')
+	buf = appendInt2Digits(buf, sec)
+	buf = append(buf, '.')
+	buf = appendInt3Digits(buf, nsec/1000000)
 
-	// Format timestamp manually without allocation
-	ts := value.Format(time.RFC3339)
-	buf = append(buf, ts...)
+	if offset == 0 {
+		buf = append(buf, 'Z')
+	} else {
+		if offset < 0 {
+			buf = append(buf, '-')
+			offset = -offset
+		} else {
+			buf = append(buf, '+')
+		}
+		buf = appendInt2Digits(buf, offset/3600)
+		buf = append(buf, ':')
+		buf = appendInt2Digits(buf, (offset%3600)/60)
+	}
 
 	buf = append(buf, '"')
+	return buf
+}
+
+func appendInt2Digits(buf []byte, n int) []byte {
+	if n < 10 {
+		buf = append(buf, '0')
+		buf = append(buf, byte('0'+n))
+		return buf
+	}
+	buf = append(buf, byte('0'+n/10))
+	buf = append(buf, byte('0'+n%10))
+	return buf
+}
+
+func appendInt3Digits(buf []byte, n int) []byte {
+	buf = append(buf, byte('0'+n/100))
+	buf = append(buf, byte('0'+(n/10)%10))
+	buf = append(buf, byte('0'+n%10))
+	return buf
+}
+
+func appendInt4Digits(buf []byte, n int) []byte {
+	buf = append(buf, byte('0'+n/1000))
+	buf = append(buf, byte('0'+(n/100)%10))
+	buf = append(buf, byte('0'+(n/10)%10))
+	buf = append(buf, byte('0'+n%10))
 	return buf
 }
 
@@ -578,12 +636,6 @@ func (le *LogEntry) serializeIntField(buf []byte, key string, value int) []byte 
 	}
 
 	return append(buf, temp[i:]...)
-}
-
-// ErrAppend is an optional interface that errors can implement to write
-// their error message directly to a bytes.Buffer, avoiding intermediate string allocations.
-type ErrAppend interface {
-	AppendError(buf *bytes.Buffer)
 }
 
 // formatLogToBytes writes log data manually to byte buffer
@@ -692,8 +744,8 @@ var byteSlicePool = sync.Pool{
 	},
 }
 
-// GetByteSliceFromPool gets a byte slice from the pool
-func GetByteSliceFromPool() []byte {
+// GetByteSlice gets a byte slice from the pool
+func GetByteSlice() []byte {
 	return byteSlicePool.Get().([]byte)
 }
 
@@ -703,8 +755,8 @@ const (
 	DefaultBufferSize     = MediumEntryBufferSize
 )
 
-// PutByteSliceToPool returns a byte slice to the pool
-func PutByteSliceToPool(b []byte) {
+// PutByteSlice returns a byte slice to the pool
+func PutByteSlice(b []byte) {
 	b = b[:0] // to
 	//nolint:staticcheck
 	byteSlicePool.Put(b)
@@ -713,8 +765,8 @@ func PutByteSliceToPool(b []byte) {
 // floatToBytes writes float64 to buffer without allocation
 func (le *LogEntry) floatToBytes(buf []byte, value float64) []byte {
 	// Use pooled buffer for float conversion
-	tempBuf := GetByteSliceFromPool()
-	defer PutByteSliceToPool(tempBuf)
+	tempBuf := GetByteSlice()
+	defer PutByteSlice(tempBuf)
 
 	// Use strconv.AppendFloat for allocation-free conversion
 	floatBytes := strconv.AppendFloat(tempBuf[:0], value, 'f', 2, 64)
@@ -724,7 +776,7 @@ func (le *LogEntry) floatToBytes(buf []byte, value float64) []byte {
 // PutLocalEntry returns entry to local goroutine pool
 func (g *LocalPool) PutLocalEntry(entry *LogEntry) {
 	if entry.Caller != nil {
-		PutCallerToPool(entry.Caller)
+		PutCaller(entry.Caller)
 		entry.Caller = nil
 	}
 

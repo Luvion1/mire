@@ -153,12 +153,12 @@ func (b *LogBuffer) Reset() {
 	b.len = 0
 }
 
-// GetBuffer gets a byte buffer from the pool
-func GetBuffer() *bytes.Buffer {
+// GetBuf gets a byte buffer from the pool
+func GetBuf() *bytes.Buffer {
 	atomic.AddInt64(&globalPoolMetrics.bufferGetCount, 1)
 	// Try to get from goroutine-local pool first for zero lock contention
 	localPool := GetGoroutineLocalBufferPool()
-	buf := localPool.GetBufferFromLocalPool()
+	buf := localPool.GetBufFromLocalPool()
 	if buf != nil {
 		return buf
 	}
@@ -167,12 +167,12 @@ func GetBuffer() *bytes.Buffer {
 	return bufferPool.Get().(*bytes.Buffer)
 }
 
-// PutBuffer returns a byte buffer to the pool
-func PutBuffer(buf *bytes.Buffer) {
+// PutBuf returns a byte buffer to the pool
+func PutBuf(buf *bytes.Buffer) {
 	atomic.AddInt64(&globalPoolMetrics.bufferPutCount, 1)
 	// Try to put to goroutine-local pool first for zero lock contention
 	localPool := GetGoroutineLocalBufferPool()
-	if localPool.PutBufferToLocalPool(buf) {
+	if localPool.PutBufToLocalPool(buf) {
 		return
 	}
 
@@ -236,15 +236,15 @@ var stringSlicePool = sync.Pool{
 	},
 }
 
-// GetStringSliceFromPool gets a []string from the pool
-func GetStringSliceFromPool() []string {
+// GetStringSlice gets a []string from the pool
+func GetStringSlice() []string {
 	atomic.AddInt64(&globalPoolMetrics.sliceGetCount, 1)
 	s := stringSlicePool.Get().([]string)
 	return s[:0] // Reset slice length but keep capacity
 }
 
-// PutStringSliceToPool returns a []string to the pool
-func PutStringSliceToPool(s []string) {
+// PutStringSlice returns a []string to the pool
+func PutStringSlice(s []string) {
 	//nolint:staticcheck
 	stringSlicePool.Put(s)
 	atomic.AddInt64(&globalPoolMetrics.slicePutCount, 1)
@@ -322,9 +322,9 @@ func GetGoroutineLocalBufferPool() *localBufferPool {
 	return newPool
 }
 
-// GetBufferFromLocalPool gets a buffer from the goroutine-local pool
+// GetBufFromLocalPool gets a buffer from the goroutine-local pool
 // Zero lock contention in hot path
-func (lp *localBufferPool) GetBufferFromLocalPool() *bytes.Buffer {
+func (lp *localBufferPool) GetBufFromLocalPool() *bytes.Buffer {
 	select {
 	case buf := <-lp.buffers:
 		buf.Reset()
@@ -336,9 +336,9 @@ func (lp *localBufferPool) GetBufferFromLocalPool() *bytes.Buffer {
 	}
 }
 
-// PutBufferToLocalPool returns a buffer to the goroutine-local pool
+// PutBufToLocalPool returns a buffer to the goroutine-local pool
 // Zero lock contention in hot path
-func (lp *localBufferPool) PutBufferToLocalPool(buf *bytes.Buffer) bool {
+func (lp *localBufferPool) PutBufToLocalPool(buf *bytes.Buffer) bool {
 	select {
 	case lp.buffers <- buf:
 		return true

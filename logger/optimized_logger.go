@@ -51,6 +51,11 @@ func NewOptimizedLogger(config LoggerConfig) *OptimizedLogger {
 
 // logInternal is the core efficient function for minimal allocations
 func (l *OptimizedLogger) logInternal(ctx context.Context, level core.Level, message []byte, fields map[string]interface{}) {
+	// Early return if logger is closed
+	if l.closed.Load() {
+		return
+	}
+
 	if level < l.level {
 		return
 	}
@@ -61,14 +66,18 @@ func (l *OptimizedLogger) logInternal(ctx context.Context, level core.Level, mes
 	}()
 
 	// Create entry using pool
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	// Fill entry with required data
 	entry.Timestamp = time.Now()
 	entry.Level = level
 	entry.LevelName = level.ToBytes()
-	entry.Message = message
+	if message != nil {
+		msgCopy := make([]byte, len(message))
+		copy(msgCopy, message)
+		entry.Message = msgCopy
+	}
 
 	// Add fields from logger
 	for k, v := range l.fields {

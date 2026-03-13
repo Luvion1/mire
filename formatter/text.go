@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Luvion1/mire/core"
+	"github.com/Luvion1/mire/errors"
 	"github.com/Luvion1/mire/util"
 )
 
@@ -112,7 +113,9 @@ func (f *TextFormatter) Format(buf *bytes.Buffer, entry *core.LogEntry) error {
 			buf.Write([]byte("\033[1m")) // Bold for important messages
 		}
 	}
-	buf.Write(entry.Message) // Message is []byte, efficient
+	if entry.Message != nil {
+		buf.Write(entry.Message) // Message is []byte, efficient
+	}
 	if f.EnableColors {
 		buf.Write(ResetColorBytes)
 	}
@@ -238,7 +241,7 @@ func (f *TextFormatter) writePostMessage(buf *bytes.Buffer, entry *core.LogEntry
 			buf.Write(errorColorBytes)
 		}
 		buf.Write([]byte("error="))
-		if appender, ok := entry.Error.(core.ErrAppend); ok {
+		if appender, ok := entry.Error.(errors.ErrAppend); ok {
 			appender.AppendError(buf) // Use zero-allocation append
 		} else {
 			buf.WriteString(entry.Error.Error()) // Fallback to standard Error() which allocates

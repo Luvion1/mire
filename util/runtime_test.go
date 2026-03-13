@@ -11,7 +11,7 @@ import (
 func TestGetCallerInfo(t *testing.T) {
 	// Call GetCallerInfo from this function (skip=1)
 	callerInfo := GetCallerInfo(1)
-	defer core.PutCallerToPool(callerInfo)
+	defer core.PutCaller(callerInfo)
 
 	if callerInfo == nil {
 		t.Fatal("GetCallerInfo returned nil")
@@ -46,7 +46,7 @@ func TestGetCallerInfoSkip2(t *testing.T) {
 	}
 
 	callerInfo := helper()
-	defer core.PutCallerToPool(callerInfo)
+	defer core.PutCaller(callerInfo)
 
 	if callerInfo == nil {
 		t.Fatal("GetCallerInfo with skip=2 returned nil")
@@ -71,7 +71,7 @@ func TestGetCallerInfoSkip2(t *testing.T) {
 func TestGetCallerInfoSkip0(t *testing.T) {
 	// This would get info about GetCallerInfo itself
 	callerInfo := GetCallerInfo(0)
-	defer core.PutCallerToPool(callerInfo)
+	defer core.PutCaller(callerInfo)
 
 	if callerInfo == nil {
 		t.Fatal("GetCallerInfo with skip=0 returned nil")
@@ -92,7 +92,7 @@ func TestGetCallerInfoInvalidSkip(t *testing.T) {
 	// at
 	if callerInfo != nil {
 		t.Errorf("GetCallerInfo with invalid skip should return nil, got %+v", callerInfo)
-		core.PutCallerToPool(callerInfo)
+		core.PutCaller(callerInfo)
 	}
 }
 
@@ -124,7 +124,7 @@ func TestGetStackTrace(t *testing.T) {
 		}
 
 		// Ensure the buffer is returned to the pool
-		core.PutBuffer(bufPtr)
+		core.PutBuf(bufPtr)
 	}
 }
 
@@ -149,7 +149,7 @@ func TestGetStackTraceDepth(t *testing.T) {
 
 				// Always return the buffer to the pool
 				if bufPtr != nil {
-					core.PutBuffer(bufPtr)
+					core.PutBuf(bufPtr)
 				}
 			} else {
 				// This is acceptable if no stack trace is available
@@ -175,7 +175,7 @@ func TestGetStackTraceZeroDepth(t *testing.T) {
 
 		// Return the buffer to the pool
 		if bufPtr != nil {
-			core.PutBuffer(bufPtr)
+			core.PutBuf(bufPtr)
 		}
 	} else {
 		// This is also acceptable
@@ -199,7 +199,7 @@ func TestGetStackTraceNegativeDepth(t *testing.T) {
 
 		// Return the buffer to the pool
 		if bufPtr != nil {
-			core.PutBuffer(bufPtr)
+			core.PutBuf(bufPtr)
 		}
 	} else {
 		// This is also acceptable
@@ -207,8 +207,8 @@ func TestGetStackTraceNegativeDepth(t *testing.T) {
 	}
 }
 
-// TestPutCallerToPool tests the PutCallerToPool function
-func TestPutCallerToPool(t *testing.T) {
+// TestPutCaller tests the PutCaller function
+func TestPutCaller(t *testing.T) {
 	// Get a caller info object
 	callerInfo := GetCallerInfo(1)
 	if callerInfo == nil {
@@ -223,11 +223,11 @@ func TestPutCallerToPool(t *testing.T) {
 	callerInfo.Package = "TestPackage"
 
 	// Put it back to the pool
-	core.PutCallerToPool(callerInfo)
+	core.PutCaller(callerInfo)
 
 	// Get another caller info object - it might be the same one
 	anotherCallerInfo := GetCallerInfo(1)
-	defer core.PutCallerToPool(anotherCallerInfo)
+	defer core.PutCaller(anotherCallerInfo)
 
 	// Verify that the new object has default values (if it's the reused one)
 	// This is hard to test definitively without knowing implementation details,
@@ -257,7 +257,7 @@ func TestStackTracePoolReturn(t *testing.T) {
 		}
 
 		// Return the buffer to the pool
-		core.PutBuffer(bufPtr)
+		core.PutBuf(bufPtr)
 
 		// at
 		// since it might be reused. The Put function should handle it properly.
@@ -289,7 +289,7 @@ func TestGetCallerInfoConcurrent(t *testing.T) {
 				}
 
 				// Return to pool
-				core.PutCallerToPool(callerInfo)
+				core.PutCaller(callerInfo)
 			}
 		}()
 	}

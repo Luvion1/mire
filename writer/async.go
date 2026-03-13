@@ -2,23 +2,50 @@ package writer
 
 import (
 	"context"
-	"github.com/Luvion1/mire/core"
-	"github.com/Luvion1/mire/errors"
-	"github.com/Luvion1/mire/util"
 	"io"
 	"runtime"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/Luvion1/mire/core"
+	"github.com/Luvion1/mire/errors"
+	"github.com/Luvion1/mire/util"
 )
 
 // LogProcessor defines the interface for the underlying logger that the AsyncLogger will use.
-// This helps to break the circular dependency between the writer and the main logger.
 type LogProcessor interface {
 	Log(ctx context.Context, level core.Level, msg []byte, keyvals ...[]byte)
 	ErrorHandler() func(error)
 	ErrOut() io.Writer
 	ErrOutMu() *sync.Mutex
+}
+
+// logJob represents a logging job
+type logJob struct {
+	level   core.Level
+	msg     []byte
+	fields  map[string][]byte
+	keyvals [][]byte
+	ctx     context.Context
+}
+
+var logJobPool = sync.Pool{
+	New: func() interface{} {
+		return &logJob{}
+	},
+}
+
+func getLogJob() *logJob {
+	return logJobPool.Get().(*logJob)
+}
+
+func putLogJob(job *logJob) {
+	job.msg = nil
+	job.fields = nil
+	job.keyvals = nil
+	job.ctx = nil
+	logJobPool.Put(job)
 }
 
 // AsyncLogger provides asynchronous logging to reduce latency
@@ -30,15 +57,6 @@ type AsyncLogger struct {
 	closed                      atomic.Bool
 	logProcessTimeout           time.Duration
 	disablePerLogContextTimeout bool
-}
-
-// logJob represents a logging job
-type logJob struct {
-	level   core.Level
-	msg     []byte
-	fields  map[string][]byte
-	keyvals [][]byte
-	ctx     context.Context
 }
 
 // NewAsyncLogger creates a new AsyncLogger
@@ -61,17 +79,25 @@ func NewAsyncLogger(processor LogProcessor, workerCount int, bufferSize int, log
 
 func (al *AsyncLogger) worker() {
 	defer al.wg.Done()
+	
+	// Pre-allocate a batch of jobs to reduce channel operations if possible
+	// But for now, we process one by one which is simpler
+	
+	for job := range al.logChan {
+		al.processJob(job)
+		putLogJob(job)
+	}
+}
+
+func (al *AsyncLogger) processJob(job *logJob) {
 	defer func() {
 		if r := recover(); r != nil {
 			if al.processor.ErrOut() != nil {
-				// Use manual formatting to avoid fmt
 				mu := al.processor.ErrOutMu()
 				mu.Lock()
 				defer mu.Unlock()
 
-				// Write panic message manually
 				_, _ = al.processor.ErrOut().Write([]byte("recovering from panic in async logger worker: "))
-				// Convert recovered value to string manually
 				recoveredStr := util.ConvertValue(r)
 				_, _ = al.processor.ErrOut().Write(util.StringToBytes(recoveredStr))
 				_, _ = al.processor.ErrOut().Write([]byte("\n"))
@@ -85,31 +111,34 @@ func (al *AsyncLogger) worker() {
 		}
 	}()
 
-	for job := range al.logChan {
-		var ctx context.Context
-		var cancel context.CancelFunc
+	var ctx context.Context
+	var cancel context.CancelFunc
 
-		if al.logProcessTimeout > 0 && !al.disablePerLogContextTimeout {
-			ctx, cancel = context.WithTimeout(job.ctx, al.logProcessTimeout)
-		} else {
-			ctx = job.ctx
-		}
+	if al.logProcessTimeout > 0 && !al.disablePerLogContextTimeout {
+		ctx, cancel = context.WithTimeout(job.ctx, al.logProcessTimeout)
+	} else {
+		ctx = job.ctx
+	}
 
-		// Handle both keyvals and fields
-		if job.keyvals != nil {
-			al.processor.Log(ctx, job.level, job.msg, job.keyvals...)
-		} else {
-			// Convert fields to keyvals for unified interface
+	// Call processor with appropriate arguments
+	if job.keyvals != nil {
+		al.processor.Log(ctx, job.level, job.msg, job.keyvals...)
+	} else {
+		// Convert fields to keyvals or call with empty keyvals
+		if job.fields != nil && len(job.fields) > 0 {
 			keyvals := make([][]byte, 0, len(job.fields)*2)
 			for k, v := range job.fields {
 				keyvals = append(keyvals, []byte(k), v)
 			}
 			al.processor.Log(ctx, job.level, job.msg, keyvals...)
+		} else {
+			// No fields or keyvals, just log the message
+			al.processor.Log(ctx, job.level, job.msg)
 		}
+	}
 
-		if cancel != nil {
-			cancel()
-		}
+	if cancel != nil {
+		cancel()
 	}
 }
 
@@ -119,36 +148,38 @@ func (al *AsyncLogger) LogZero(level core.Level, msg []byte, ctx context.Context
 		return
 	}
 
+	// Copy data if we're doing async
 	msgCopy := make([]byte, len(msg))
 	copy(msgCopy, msg)
 
-	// Copy keyvals to avoid race conditions
-	keyvalsCopy := make([][]byte, len(keyvals))
-	for i, kv := range keyvals {
-		kvCopy := make([]byte, len(kv))
-		copy(kvCopy, kv)
-		keyvalsCopy[i] = kvCopy
+	var keyvalsCopy [][]byte
+	if len(keyvals) > 0 {
+		keyvalsCopy = make([][]byte, len(keyvals))
+		for i, kv := range keyvals {
+			kvCopy := make([]byte, len(kv))
+			copy(kvCopy, kv)
+			keyvalsCopy[i] = kvCopy
+		}
 	}
 
+	job := getLogJob()
+	job.level = level
+	job.msg = msgCopy
+	job.keyvals = keyvalsCopy
+	job.ctx = ctx
+
 	select {
-	case al.logChan <- &logJob{level: level, msg: msgCopy, keyvals: keyvalsCopy, ctx: ctx}:
-		// Successfully sent
+	case al.logChan <- job:
 	default:
-		// Channel full, handle error
+		putLogJob(job)
 		if handler := al.processor.ErrorHandler(); handler != nil {
 			handler(errors.ErrAsyncBufferFull)
-		} else if errOut := al.processor.ErrOut(); errOut != nil {
-			mu := al.processor.ErrOutMu()
-			mu.Lock()
-			_, _ = al.processor.ErrOut().Write([]byte("async buffer full\n"))
-			mu.Unlock()
 		}
 	}
 }
 
 // Log queues a log job for asynchronous processing
 func (al *AsyncLogger) Log(level core.Level, msg []byte, fields map[string][]byte, ctx context.Context) {
-	// Don't try to log if logger is closed
 	if al.closed.Load() {
 		return
 	}
@@ -156,18 +187,21 @@ func (al *AsyncLogger) Log(level core.Level, msg []byte, fields map[string][]byt
 	msgCopy := make([]byte, len(msg))
 	copy(msgCopy, msg)
 
+	// Fields are already copied or are safe?
+	// Usually they are copied in the logger before calling asyncLogger.Log
+
+	job := getLogJob()
+	job.level = level
+	job.msg = msgCopy
+	job.fields = fields
+	job.ctx = ctx
+
 	select {
-	case al.logChan <- &logJob{level: level, msg: msgCopy, fields: fields, ctx: ctx}:
-		// Successfully sent
+	case al.logChan <- job:
 	default:
-		// Channel full, handle error
+		putLogJob(job)
 		if handler := al.processor.ErrorHandler(); handler != nil {
 			handler(errors.ErrAsyncBufferFull)
-		} else if errOut := al.processor.ErrOut(); errOut != nil {
-			mu := al.processor.ErrOutMu()
-			mu.Lock()
-			_, _ = errOut.Write([]byte("Warning: Async log channel full, dropping log.\n"))
-			mu.Unlock()
 		}
 	}
 }

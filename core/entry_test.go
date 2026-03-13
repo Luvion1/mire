@@ -8,11 +8,11 @@ import (
 
 // TestLogEntryCreation tests basic LogEntry creation and field initialization
 func TestLogEntryCreation(t *testing.T) {
-	entry := GetEntryFromPool()
-	defer PutEntryToPool(entry)
+	entry := GetEntry()
+	defer PutEntry(entry)
 
 	if entry == nil {
-		t.Fatal("GetEntryFromPool returned nil")
+		t.Fatal("GetEntry returned nil")
 	}
 
 	// Check initial state
@@ -81,35 +81,35 @@ func TestLogEntryCreation(t *testing.T) {
 	}
 }
 
-// TestGetEntryFromPool tests the GetEntryFromPool function
-func TestGetEntryFromPool(t *testing.T) {
-	entry1 := GetEntryFromPool()
-	entry2 := GetEntryFromPool()
+// TestGetEntry tests the GetEntry function
+func TestGetEntry(t *testing.T) {
+	entry1 := GetEntry()
+	entry2 := GetEntry()
 
 	if entry1 == nil || entry2 == nil {
-		t.Fatal("GetEntryFromPool returned nil")
+		t.Fatal("GetEntry returned nil")
 	}
 
 	// Return the entries to the pool
-	PutEntryToPool(entry1)
-	PutEntryToPool(entry2)
+	PutEntry(entry1)
+	PutEntry(entry2)
 
 	// Get entries again to test reuse
-	entry3 := GetEntryFromPool()
-	entry4 := GetEntryFromPool()
+	entry3 := GetEntry()
+	entry4 := GetEntry()
 
 	if entry3 == nil || entry4 == nil {
-		t.Fatal("GetEntryFromPool returned nil after reuse")
+		t.Fatal("GetEntry returned nil after reuse")
 	}
 
 	// Return the entries to the pool
-	PutEntryToPool(entry3)
-	PutEntryToPool(entry4)
+	PutEntry(entry3)
+	PutEntry(entry4)
 }
 
-// TestPutEntryToPool tests the PutEntryToPool function
-func TestPutEntryToPool(t *testing.T) {
-	entry := GetEntryFromPool()
+// TestPutEntry tests the PutEntry function
+func TestPutEntry(t *testing.T) {
+	entry := GetEntry()
 
 	// Set some values to ensure they're reset
 	entry.Timestamp = time.Now()
@@ -135,87 +135,87 @@ func TestPutEntryToPool(t *testing.T) {
 	entry.Environment = []byte("test")
 	entry.StackTraceBufPtr = &[]byte{1, 2, 3}
 
-	PutEntryToPool(entry)
+	PutEntry(entry)
 
 	// Get a new entry and check if it's properly reset
-	newEntry := GetEntryFromPool()
+	newEntry := GetEntry()
 
 	// Check that all fields are reset to their default values
 	if !newEntry.Timestamp.IsZero() {
-		t.Error("PutEntryToPool did not reset Timestamp")
+		t.Error("PutEntry did not reset Timestamp")
 	}
 	if newEntry.Level != INFO {
-		t.Errorf("PutEntryToPool did not reset Level, got %v", newEntry.Level)
+		t.Errorf("PutEntry did not reset Level, got %v", newEntry.Level)
 	}
 	if newEntry.LevelName != nil {
-		t.Error("PutEntryToPool did not reset LevelName")
+		t.Error("PutEntry did not reset LevelName")
 	}
 	if newEntry.Message != nil {
-		t.Error("PutEntryToPool did not reset Message")
+		t.Error("PutEntry did not reset Message")
 	}
 	if len(newEntry.Fields) != 0 {
-		t.Errorf("PutEntryToPool did not reset Fields map, got length %d", len(newEntry.Fields))
+		t.Errorf("PutEntry did not reset Fields map, got length %d", len(newEntry.Fields))
 	}
 	if len(newEntry.CustomMetrics) != 0 {
-		t.Errorf("PutEntryToPool did not reset CustomMetrics map, got length %d", len(newEntry.CustomMetrics))
+		t.Errorf("PutEntry did not reset CustomMetrics map, got length %d", len(newEntry.CustomMetrics))
 	}
 	if len(newEntry.Tags) != 0 {
-		t.Errorf("PutEntryToPool did not reset Tags slice, got length %d", len(newEntry.Tags))
+		t.Errorf("PutEntry did not reset Tags slice, got length %d", len(newEntry.Tags))
 	}
 	if newEntry.PID != 0 {
-		t.Errorf("PutEntryToPool did not reset PID, got %d", newEntry.PID)
+		t.Errorf("PutEntry did not reset PID, got %d", newEntry.PID)
 	}
 	if newEntry.GoroutineID != nil {
-		t.Error("PutEntryToPool did not reset GoroutineID")
+		t.Error("PutEntry did not reset GoroutineID")
 	}
 	if newEntry.TraceID != nil {
-		t.Error("PutEntryToPool did not reset TraceID")
+		t.Error("PutEntry did not reset TraceID")
 	}
 	if newEntry.SpanID != nil {
-		t.Error("PutEntryToPool did not reset SpanID")
+		t.Error("PutEntry did not reset SpanID")
 	}
 	if newEntry.UserID != nil {
-		t.Error("PutEntryToPool did not reset UserID")
+		t.Error("PutEntry did not reset UserID")
 	}
 	if newEntry.SessionID != nil {
-		t.Error("PutEntryToPool did not reset SessionID")
+		t.Error("PutEntry did not reset SessionID")
 	}
 	if newEntry.RequestID != nil {
-		t.Error("PutEntryToPool did not reset RequestID")
+		t.Error("PutEntry did not reset RequestID")
 	}
 	if newEntry.Duration != 0 {
-		t.Errorf("PutEntryToPool did not reset Duration, got %v", newEntry.Duration)
+		t.Errorf("PutEntry did not reset Duration, got %v", newEntry.Duration)
 	}
 	if newEntry.Error != nil {
-		t.Error("PutEntryToPool did not reset Error")
+		t.Error("PutEntry did not reset Error")
 	}
 	if newEntry.StackTrace != nil {
-		t.Error("PutEntryToPool did not reset StackTrace")
+		t.Error("PutEntry did not reset StackTrace")
 	}
 	if newEntry.Hostname != nil {
-		t.Error("PutEntryToPool did not reset Hostname")
+		t.Error("PutEntry did not reset Hostname")
 	}
 	if newEntry.Application != nil {
-		t.Error("PutEntryToPool did not reset Application")
+		t.Error("PutEntry did not reset Application")
 	}
 	if newEntry.Version != nil {
-		t.Error("PutEntryToPool did not reset Version")
+		t.Error("PutEntry did not reset Version")
 	}
 	if newEntry.Environment != nil {
-		t.Error("PutEntryToPool did not reset Environment")
+		t.Error("PutEntry did not reset Environment")
 	}
 	if newEntry.StackTraceBufPtr != nil {
-		t.Error("PutEntryToPool did not reset StackTraceBufPtr")
+		t.Error("PutEntry did not reset StackTraceBufPtr")
 	}
 
-	PutEntryToPool(newEntry)
+	PutEntry(newEntry)
 }
 
 // TestCallerPool tests the Caller object pool
 func TestCallerPool(t *testing.T) {
-	ci1 := GetCallerFromPool()
+	ci1 := GetCaller()
 	if ci1 == nil {
-		t.Fatal("GetCallerFromPool returned nil")
+		t.Fatal("GetCaller returned nil")
 	}
 
 	// Set some values
@@ -224,99 +224,99 @@ func TestCallerPool(t *testing.T) {
 	ci1.Function = "TestFunction"
 	ci1.Package = "test"
 
-	PutCallerToPool(ci1)
+	PutCaller(ci1)
 
 	// Get a new Caller and check if it's properly reset
-	ci2 := GetCallerFromPool()
+	ci2 := GetCaller()
 	if ci2.File != "" || ci2.Line != 0 || ci2.Function != "" || ci2.Package != "" {
-		t.Errorf("PutCallerToPool did not reset Caller, got %+v", ci2)
+		t.Errorf("PutCaller did not reset Caller, got %+v", ci2)
 	}
 
-	PutCallerToPool(ci2)
+	PutCaller(ci2)
 }
 
 // TestMapFloatPool tests the map[string]float64 object pool
 func TestMapFloatPool(t *testing.T) {
-	m1 := GetMapFloatFromPool()
+	m1 := GetMapFloat()
 	if m1 == nil {
-		t.Fatal("GetMapFloatFromPool returned nil")
+		t.Fatal("GetMapFloat returned nil")
 	}
 
 	// Add some values
 	m1["test"] = 1.0
 
-	PutMapFloatToPool(m1)
+	PutMapFloat(m1)
 
 	// Get a new map and check if it's properly reset
-	m2 := GetMapFloatFromPool()
+	m2 := GetMapFloat()
 	if len(m2) != 0 {
-		t.Errorf("PutMapFloatToPool did not reset map, got length %d", len(m2))
+		t.Errorf("PutMapFloat did not reset map, got length %d", len(m2))
 	}
 
-	PutMapFloatToPool(m2)
+	PutMapFloat(m2)
 }
 
 // TestMapInterfacePool tests the map[string]interface{} object pool
 func TestMapInterfacePool(t *testing.T) {
-	m1 := GetMapByteFromPool()
+	m1 := GetMapByte()
 	if m1 == nil {
-		t.Fatal("GetMapByteFromPool returned nil")
+		t.Fatal("GetMapByte returned nil")
 	}
 
 	// Add some values
 	m1["test"] = []byte("value")
 
-	PutMapByteToPool(m1)
+	PutMapByte(m1)
 
 	// Get a new map and check if it's properly reset
-	m2 := GetMapByteFromPool()
+	m2 := GetMapByte()
 	if len(m2) != 0 {
-		t.Errorf("PutMapByteToPool did not reset map, got length %d", len(m2))
+		t.Errorf("PutMapByte did not reset map, got length %d", len(m2))
 	}
 
-	PutMapByteToPool(m2)
+	PutMapByte(m2)
 }
 
 // TestBufferPool tests the byte buffer object pool
 func TestBufferPool(t *testing.T) {
-	buf1 := GetBuffer()
+	buf1 := GetBuf()
 	if buf1 == nil {
-		t.Fatal("GetBuffer returned nil")
+		t.Fatal("GetBuf returned nil")
 	}
 
 	// Add some data
 	*buf1 = append(*buf1, []byte("test")...)
 
-	PutBuffer(buf1)
+	PutBuf(buf1)
 
 	// Get a new buffer and check if it's properly reset
-	buf2 := GetBuffer()
+	buf2 := GetBuf()
 	if len(*buf2) != 0 {
-		t.Errorf("PutBuffer did not reset buffer, got length %d", len(*buf2))
+		t.Errorf("PutBuf did not reset buffer, got length %d", len(*buf2))
 	}
 
-	PutBuffer(buf2)
+	PutBuf(buf2)
 }
 
 // TestStringSlicePool tests the string slice object pool
 func TestStringSlicePool(t *testing.T) {
-	s1 := GetStringSliceFromPool()
+	s1 := GetStringSlice()
 	if s1 == nil {
-		t.Fatal("GetStringSliceFromPool returned nil")
+		t.Fatal("GetStringSlice returned nil")
 	}
 
 	// Add some values
 	*s1 = append(*s1, "test")
 
-	PutStringSliceToPool(s1)
+	PutStringSlice(s1)
 
 	// Get a new slice and check if it's properly reset
-	s2 := GetStringSliceFromPool()
+	s2 := GetStringSlice()
 	if len(*s2) != 0 {
-		t.Errorf("PutStringSliceToPool did not reset slice, got length %d", len(*s2))
+		t.Errorf("PutStringSlice did not reset slice, got length %d", len(*s2))
 	}
 
-	PutStringSliceToPool(s2)
+	PutStringSlice(s2)
 }
 
 // TestMetrics tests the CoreMetrics functionality
@@ -443,8 +443,8 @@ func TestMetricsConcurrent(t *testing.T) {
 
 // TestLogEntryZeroAllocJSONSerialize tests the ZeroAllocJSONSerialize method
 func TestLogEntryZeroAllocJSONSerialize(t *testing.T) {
-	entry := GetEntryFromPool()
-	defer PutEntryToPool(entry)
+	entry := GetEntry()
+	defer PutEntry(entry)
 
 	// Set up the entry with test data
 	entry.Timestamp = time.Now()
@@ -479,8 +479,8 @@ func TestLogEntryZeroAllocJSONSerialize(t *testing.T) {
 
 // TestLogEntryFormatLogToBytes tests the formatLogToBytes method
 func TestLogEntryFormatLogToBytes(t *testing.T) {
-	entry := GetEntryFromPool()
-	defer PutEntryToPool(entry)
+	entry := GetEntry()
+	defer PutEntry(entry)
 
 	// Set up the entry with test data
 	entry.Timestamp = time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
@@ -507,8 +507,8 @@ func TestLogEntryFormatLogToBytes(t *testing.T) {
 
 // TestLogEntryIntConversion tests int to bytes conversion functions
 func TestLogEntryIntConversion(t *testing.T) {
-	entry := GetEntryFromPool()
-	defer PutEntryToPool(entry)
+	entry := GetEntry()
+	defer PutEntry(entry)
 
 	// Test intToBytes
 	buf := []byte{}
@@ -545,8 +545,8 @@ func TestLogEntryIntConversion(t *testing.T) {
 
 // TestLogEntryFloatConversion tests float to bytes conversion function
 func TestLogEntryFloatConversion(t *testing.T) {
-	entry := GetEntryFromPool()
-	defer PutEntryToPool(entry)
+	entry := GetEntry()
+	defer PutEntry(entry)
 
 	// Test with a sample float
 	buf := []byte{}

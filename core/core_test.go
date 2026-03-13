@@ -8,9 +8,9 @@ import (
 // TestLogEntryPoolOperations tests the complete lifecycle of LogEntry pooling
 func TestLogEntryPoolOperations(t *testing.T) {
 	// Test getting an entry from pool
-	entry := GetEntryFromPool()
+	entry := GetEntry()
 	if entry == nil {
-		t.Fatal("GetEntryFromPool returned nil")
+		t.Fatal("GetEntry returned nil")
 	}
 
 	// Verify initial state is reset
@@ -34,10 +34,10 @@ func TestLogEntryPoolOperations(t *testing.T) {
 	entry.Fields["test"] = []byte("value")
 
 	// Put back to pool
-	PutEntryToPool(entry)
+	PutEntry(entry)
 
 	// Get another entry and verify it was reset
-	entry2 := GetEntryFromPool()
+	entry2 := GetEntry()
 	if !entry2.Timestamp.IsZero() {
 		t.Error("Entry timestamp should be reset after pool retrieval")
 	}
@@ -54,8 +54,8 @@ func TestLogEntryPoolOperations(t *testing.T) {
 
 // TestLogEntryZeroAllocSerialization tests zero-allocation serialization
 func TestLogEntryZeroAllocSerialization(t *testing.T) {
-	entry := GetEntryFromPool()
-	defer PutEntryToPool(entry)
+	entry := GetEntry()
+	defer PutEntry(entry)
 
 	entry.Timestamp = time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
 	entry.Level = INFO
@@ -80,9 +80,9 @@ func TestLogEntryZeroAllocSerialization(t *testing.T) {
 // TestCallerPoolOperations tests the Caller pool operations
 func TestCallerPoolOperations(t *testing.T) {
 	// Get from pool
-	ci := GetCallerFromPool()
+	ci := GetCaller()
 	if ci == nil {
-		t.Fatal("GetCallerFromPool returned nil")
+		t.Fatal("GetCaller returned nil")
 	}
 
 	// Verify initial state
@@ -106,11 +106,11 @@ func TestCallerPoolOperations(t *testing.T) {
 	ci.Package = "main"
 
 	// Put back to pool
-	PutCallerToPool(ci)
+	PutCaller(ci)
 
 	// Get another and verify reset
-	ci2 := GetCallerFromPool()
-	defer PutCallerToPool(ci2)
+	ci2 := GetCaller()
+	defer PutCaller(ci2)
 
 	if ci2.File != "" {
 		t.Error("Caller info file should be reset")
@@ -129,9 +129,9 @@ func TestCallerPoolOperations(t *testing.T) {
 // TestMapPools tests the map pools functionality
 func TestMapPools(t *testing.T) {
 	// Test map byte pool
-	map1 := GetMapByteFromPool()
+	map1 := GetMapByte()
 	if map1 == nil {
-		t.Fatal("GetMapByteFromPool returned nil")
+		t.Fatal("GetMapByte returned nil")
 	}
 	if len(map1) != 0 {
 		t.Error("Initial map should be empty")
@@ -142,20 +142,20 @@ func TestMapPools(t *testing.T) {
 	map1["key2"] = []byte("42")
 
 	// Put back to pool
-	PutMapByteToPool(map1)
+	PutMapByte(map1)
 
 	// Get another and verify it's clean
-	map2 := GetMapByteFromPool()
-	defer PutMapByteToPool(map2)
+	map2 := GetMapByte()
+	defer PutMapByte(map2)
 
 	if len(map2) != 0 {
 		t.Error("Pool should return clean map after put")
 	}
 
 	// Test map float pool
-	floatMap1 := GetMapFloatFromPool()
+	floatMap1 := GetMapFloat()
 	if floatMap1 == nil {
-		t.Fatal("GetMapFloatFromPool returned nil")
+		t.Fatal("GetMapFloat returned nil")
 	}
 	if len(floatMap1) != 0 {
 		t.Error("Initial float map should be empty")
@@ -166,11 +166,11 @@ func TestMapPools(t *testing.T) {
 	floatMap1["metric2"] = 2.7
 
 	// Put back to pool
-	PutMapFloatToPool(floatMap1)
+	PutMapFloat(floatMap1)
 
 	// Get another and verify it's clean
-	floatMap2 := GetMapFloatFromPool()
-	defer PutMapFloatToPool(floatMap2)
+	floatMap2 := GetMapFloat()
+	defer PutMapFloat(floatMap2)
 
 	if len(floatMap2) != 0 {
 		t.Error("Float pool should return clean map after put")
@@ -180,9 +180,9 @@ func TestMapPools(t *testing.T) {
 // TestBufferPoolOperations tests the buffer pool operations
 func TestBufferPoolOperations(t *testing.T) {
 	// Get from pool
-	buf := GetBuffer()
+	buf := GetBuf()
 	if buf == nil {
-		t.Fatal("GetBuffer returned nil")
+		t.Fatal("GetBuf returned nil")
 	}
 
 	if len(*buf) != 0 {
@@ -196,11 +196,11 @@ func TestBufferPoolOperations(t *testing.T) {
 	}
 
 	// Put back to pool
-	PutBuffer(buf)
+	PutBuf(buf)
 
 	// to
-	buf2 := GetBuffer()
-	defer PutBuffer(buf2)
+	buf2 := GetBuf()
+	defer PutBuf(buf2)
 
 	if len(*buf2) != 0 {
 		t.Error("Buffer should be reset to length 0 after pool return")

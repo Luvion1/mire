@@ -36,8 +36,8 @@ func TestTextFormatterFormat(t *testing.T) {
 	tf := NewText()
 
 	// Create a test log entry
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Timestamp = time.Now()
 	entry.Level = core.INFO
@@ -70,8 +70,8 @@ func TestTextFormatterWithColors(t *testing.T) {
 	tf := NewText()
 	tf.EnableColors = true
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Level = core.ERROR
 	entry.Message = []byte("error message")
@@ -98,8 +98,8 @@ func TestTextFormatterWithoutTimestamp(t *testing.T) {
 	tf := NewText()
 	tf.ShowTimestamp = false
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Timestamp = time.Now()
 	entry.Level = core.INFO
@@ -122,8 +122,8 @@ func TestTextFormatterWithCaller(t *testing.T) {
 	tf := NewText()
 	tf.ShowCaller = true
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Level = core.INFO
 	entry.Message = []byte("with caller")
@@ -142,7 +142,7 @@ func TestTextFormatterWithCaller(t *testing.T) {
 
 	// Clean up the caller info
 	if entry.Caller != nil {
-		core.PutCallerToPool(entry.Caller)
+		core.PutCaller(entry.Caller)
 	}
 }
 
@@ -150,8 +150,8 @@ func TestTextFormatterWithCaller(t *testing.T) {
 func TestTextFormatterWithFields(t *testing.T) {
 	tf := NewText()
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Level = core.INFO
 	entry.Message = []byte("with fields")
@@ -180,8 +180,8 @@ func TestTextFormatterWithStackTrace(t *testing.T) {
 	tf := NewText()
 	tf.IncludeStackTrace = true
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Level = core.ERROR
 	entry.Message = []byte("with stack trace")
@@ -209,8 +209,8 @@ func TestTextFormatterWithGoroutine(t *testing.T) {
 	tf := NewText()
 	tf.ShowGoroutine = true
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Level = core.INFO
 	entry.Message = []byte("with goroutine")
@@ -238,8 +238,8 @@ func TestTextFormatterWithPID(t *testing.T) {
 	tf := NewText()
 	tf.ShowPID = true
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Level = core.INFO
 	entry.Message = []byte("with PID")
@@ -267,8 +267,8 @@ func TestTextFormatterWithTraceInfo(t *testing.T) {
 	tf := NewText()
 	tf.ShowTraceInfo = true
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Level = core.INFO
 	entry.Message = []byte("with trace info")
@@ -293,8 +293,8 @@ func TestTextFormatterWithCustomFieldOrder(t *testing.T) {
 	tf := NewText()
 	tf.CustomFieldOrder = []string{"field2", "field1"} // Specify custom order
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Level = core.INFO
 	entry.Message = []byte("with custom field order")
@@ -325,8 +325,8 @@ func TestTextFormatterWithFieldTransformers(t *testing.T) {
 		},
 	}
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Level = core.INFO
 	entry.Message = []byte("with transformed field")
@@ -352,8 +352,8 @@ func TestTextFormatterWithSensitiveFields(t *testing.T) {
 	tf.SensitiveFields = []string{"password", "token"}
 	tf.MaskValue = "***MASKED***"
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Level = core.INFO
 	entry.Message = []byte("with sensitive field")
@@ -408,8 +408,8 @@ func TestTextFormatterWriteMeta(t *testing.T) {
 	tf.ShowHostname = true
 	tf.ShowApplication = true
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.PID = 12345
 	entry.GoroutineID = []byte("67890")
@@ -431,7 +431,7 @@ func TestTextFormatterWriteMeta(t *testing.T) {
 
 	// Clean up
 	if entry.Caller != nil {
-		core.PutCallerToPool(entry.Caller)
+		core.PutCaller(entry.Caller)
 	}
 }
 
@@ -439,8 +439,8 @@ func TestTextFormatterWriteMeta(t *testing.T) {
 func TestTextFormatterWriteTraceInfo(t *testing.T) {
 	tf := NewText()
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	// Create a short trace, span, and request ID
 	longTraceID := "very_long_trace_id_that_will_be_shortened"

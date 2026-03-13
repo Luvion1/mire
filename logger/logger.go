@@ -81,6 +81,7 @@ type LoggerConfig struct {
 	WorkerCount       int                                     // Number of async worker goroutines
 	NoTimeout         bool                                    // Disable context timeout per log in async mode
 	ClockInterval     time.Duration                           // Interval for clock (for timestamp optimization)
+	NoClock           bool                                    // Disable clock optimization
 	MaskValue         string                                  // String value to use for masking sensitive data
 }
 
@@ -247,7 +248,12 @@ func NewLogger(config LoggerConfig) *Logger {
 		pid:              os.Getpid(),
 		entryPool: &sync.Pool{
 			New: func() interface{} {
-				return &core.LogEntry{}
+				return &core.LogEntry{
+					Fields:        make(map[string][]byte),
+					CustomMetrics: make(map[string]float64),
+					Tags:          make([][]byte, 0),
+					KeyVals:       make([][]byte, 0),
+				}
 			},
 		},
 	}
@@ -270,6 +276,10 @@ func NewLogger(config LoggerConfig) *Logger {
 
 	if l.exitFunc == nil {
 		l.exitFunc = os.Exit
+	}
+
+	if l.clock == nil && !config.NoClock {
+		l.clock = util.NewClock(util.DefaultInterval)
 	}
 
 	l.setupWriters()
@@ -369,6 +379,17 @@ func (l *Logger) log(ctx context.Context, level core.Level, message []byte, fiel
 // internal logging method optimized for 1M+ logs/second with []byte fields (zero-allocation)
 // logZero handles zero-allocation logging with variadic key-value pairs
 func (l *Logger) logZero(ctx context.Context, level core.Level, message []byte, keyvals ...[]byte) {
+	// Early return if logger is closed
+	if l.closed.Load() {
+		return
+	}
+
+	// Early filtering to avoid unnecessary work
+	if level < l.Config.Level {
+		return
+	}
+
+	// Sampling if enabled
 	if l.sampler != nil && !l.sampler.ShouldLog() {
 		return
 	}
@@ -417,12 +438,12 @@ func (l *Logger) write(ctx context.Context, level core.Level, message []byte, fi
 	entry := l.buildEntry(ctx, level, message, fields)
 
 	// Use efficient buffer for zero-allocation
-	buf := util.GetBuffer()
-	defer util.PutBuffer(buf)
+	buf := util.GetBuf()
+	defer util.PutBuf(buf)
 
 	if err := l.formatter.Format(buf, entry); err != nil {
 		l.handleError(err)
-		core.PutEntryToPool(entry)
+		core.PutEntry(entry)
 		return
 	}
 
@@ -449,10 +470,10 @@ func (l *Logger) write(ctx context.Context, level core.Level, message []byte, fi
 
 	l.runHooks(entry)
 
-	// must be done after hooks and writing, but before PutEntryToPool
+	// must be done after hooks and writing, but before PutEntry
 	l.handleLevelActions(level, entry)
 
-	core.PutEntryToPool(entry)
+	core.PutEntry(entry)
 }
 
 // writeZero writes log entry with zero allocations using variadic key-value pairs
@@ -462,28 +483,64 @@ func (l *Logger) writeZero(ctx context.Context, level core.Level, message []byte
 
 	entry.Reset()
 	entry.Level = level
-	entry.Message = message
-	entry.Timestamp = l.clock.Now()
-
-	// Set keyvals directly without map allocation
-	if len(keyvals)%2 == 0 {
-		entry.KeyVals = keyvals
+	if l.clock != nil {
+		entry.Timestamp = l.clock.Now()
 	} else {
-		// Odd number of keyvals, ignore the last one
-		entry.KeyVals = keyvals[:len(keyvals)-1]
+		entry.Timestamp = time.Now()
 	}
+	entry.PID = l.pid
+
+	// In synchronous mode, we don't need to copy message and keyvals
+	// because they won't be modified by the caller before we finish formatting.
+	// Copy keyvals to prevent race conditions
+	keyvalsCopy := make([][]byte, len(keyvals))
+	for i, kv := range keyvals {
+		kvCopy := make([]byte, len(kv))
+		copy(kvCopy, kv)
+		keyvalsCopy[i] = kvCopy
+	}
+	entry.Message = message
+	entry.KeyVals = keyvalsCopy
 
 	if l.Config.ShowCaller {
 		entry.Caller = util.GetCallerInfo(l.Config.CallerDepth)
 	}
 
-	buf := util.GetBuffer()
-	defer util.PutBuffer(buf)
+	if l.Config.IncludeStackTrace && level >= core.ERROR {
+		stackTraceBytes, stackTraceBufPtr := util.GetStackTrace(l.Config.StackTraceDepth)
+		entry.StackTrace = stackTraceBytes
+		entry.StackTraceBufPtr = stackTraceBufPtr
+	}
 
-	_ = l.Config.Formatter.Format(buf, entry)
-	l.mu.Lock()
-	_, _ = l.Config.Output.Write(buf.Bytes())
-	l.mu.Unlock()
+	buf := util.GetBuf()
+	defer util.PutBuf(buf)
+
+	if err := l.Config.Formatter.Format(buf, entry); err != nil {
+		l.handleError(err)
+		return
+	}
+	
+	bytesToWrite := buf.Bytes()
+
+	// Optimized write with minimal locking
+	if l.Config.NoLocking {
+		if n, err := l.Config.Output.Write(bytesToWrite); err != nil {
+			l.handleError(err)
+		} else {
+			l.stats.Increment(level, n)
+		}
+	} else {
+		l.mu.Lock()
+		if n, err := l.Config.Output.Write(bytesToWrite); err != nil {
+			l.handleError(err)
+		} else {
+			l.stats.Increment(level, n)
+		}
+		l.mu.Unlock()
+	}
+
+	l.runHooks(entry)
+	l.handleLevelActions(level, entry)
 }
 
 // final write to output with zero-allocation optimizations for []byte fields (true zero-allocation)
@@ -491,12 +548,12 @@ func (l *Logger) writeByte(ctx context.Context, level core.Level, message []byte
 	entry := l.buildEntryByte(ctx, level, message, fields)
 
 	// Use efficient buffer for zero-allocation
-	buf := util.GetBuffer()
-	defer util.PutBuffer(buf)
+	buf := util.GetBuf()
+	defer util.PutBuf(buf)
 
 	if err := l.formatter.Format(buf, entry); err != nil {
 		l.handleError(err)
-		core.PutEntryToPool(entry)
+		core.PutEntry(entry)
 		return
 	}
 
@@ -523,10 +580,10 @@ func (l *Logger) writeByte(ctx context.Context, level core.Level, message []byte
 
 	l.runHooks(entry)
 
-	// must be done after hooks and writing, but before PutEntryToPool
+	// must be done after hooks and writing, but before PutEntry
 	l.handleLevelActions(level, entry)
 
-	core.PutEntryToPool(entry)
+	core.PutEntry(entry)
 }
 
 // formatArgsToBytes formats variadic arguments into a byte slice with minimal allocations.
@@ -600,10 +657,10 @@ func (l *Logger) formatArgsToBytes(args ...interface{}) []byte {
 		default:
 			// For other types, we fallback to manual conversion to avoid fmt
 			// Use a temporary buffer to avoid multiple allocations
-			tempBuf := util.GetBuffer()
+			tempBuf := util.GetBuf()
 			manualFormatValue(tempBuf, v)
 			buf = append(buf, tempBuf.Bytes()...)
-			util.PutBuffer(tempBuf)
+			util.PutBuf(tempBuf)
 		}
 	}
 
@@ -614,8 +671,8 @@ func (l *Logger) formatArgsToBytes(args ...interface{}) []byte {
 // This implementation aims for at most 1 allocation per call.
 func (l *Logger) formatfArgsToBytes(format string, args ...interface{}) []byte {
 	// We only allow one allocation per call: the final byte slice
-	buf := util.GetBuffer()
-	defer util.PutBuffer(buf)
+	buf := util.GetBuf()
+	defer util.PutBuf(buf)
 
 	// Use manual formatting to avoid fmt dependency
 	manualFormatWithArgs(buf, format, args...)
@@ -630,7 +687,7 @@ func (l *Logger) formatfArgsToBytes(format string, args ...interface{}) []byte {
 //
 //nolint:unused
 func (l *Logger) buildEntry(ctx context.Context, level core.Level, message []byte, fields map[string]interface{}) *core.LogEntry {
-	entry := core.GetEntryFromPool()
+	entry := core.GetEntry()
 
 	// Use clock if available to avoid allocation
 	if l.clock != nil {
@@ -667,22 +724,13 @@ func (l *Logger) buildEntry(ctx context.Context, level core.Level, message []byt
 			entry.Fields[k] = v
 		}
 	} else if ctx != nil {
-		contextData := util.ExtractFromContext(ctx)
-		for k, v := range contextData {
-			switch k {
-			case "trace_id":
-				entry.TraceID = core.StringToBytes(v)
-			case "span_id":
-				entry.SpanID = core.StringToBytes(v)
-			case "user_id":
-				entry.UserID = core.StringToBytes(v)
-			case "session_id":
-				entry.SessionID = core.StringToBytes(v)
-			case "request_id":
-				entry.RequestID = core.StringToBytes(v)
-			}
-		}
-		util.PutMapStr(contextData)
+		contextData := util.ExtractToBytes(ctx)
+		entry.TraceID = contextData.TraceID
+		entry.SpanID = contextData.SpanID
+		entry.UserID = contextData.UserID
+		entry.SessionID = contextData.SessionID
+		entry.RequestID = contextData.RequestID
+		util.PutContextValues(contextData)
 	}
 
 	// Caller info only if required to avoid overhead
@@ -702,7 +750,7 @@ func (l *Logger) buildEntry(ctx context.Context, level core.Level, message []byt
 
 // buildEntryByte creates a log entry with minimal allocations using []byte fields (true zero-allocation)
 func (l *Logger) buildEntryByte(ctx context.Context, level core.Level, message []byte, fields map[string][]byte) *core.LogEntry {
-	entry := core.GetEntryFromPool()
+	entry := core.GetEntry()
 
 	// Use clock if available to avoid allocation
 	if l.clock != nil {
@@ -732,21 +780,23 @@ func (l *Logger) buildEntryByte(ctx context.Context, level core.Level, message [
 		}
 	} else if ctx != nil {
 		contextData := util.ExtractFromContext(ctx)
-		for k, v := range contextData {
-			switch k {
-			case "trace_id":
-				entry.TraceID = core.StringToBytes(v)
-			case "span_id":
-				entry.SpanID = core.StringToBytes(v)
-			case "user_id":
-				entry.UserID = core.StringToBytes(v)
-			case "session_id":
-				entry.SessionID = core.StringToBytes(v)
-			case "request_id":
-				entry.RequestID = core.StringToBytes(v)
+		if contextData != nil {
+			for k, v := range contextData {
+				switch k {
+				case "trace_id":
+					entry.TraceID = core.StringToBytes(v)
+				case "span_id":
+					entry.SpanID = core.StringToBytes(v)
+				case "user_id":
+					entry.UserID = core.StringToBytes(v)
+				case "session_id":
+					entry.SessionID = core.StringToBytes(v)
+				case "request_id":
+					entry.RequestID = core.StringToBytes(v)
+				}
 			}
+			util.PutMapStr(contextData)
 		}
-		util.PutMapStr(contextData)
 	}
 
 	// Caller info only if required to avoid overhead
@@ -807,7 +857,9 @@ func (l *Logger) handleLevelActions(level core.Level, entry *core.LogEntry) {
 			// Use a temporary byte buffer to avoid string concatenation allocation
 			var msgBuf bytes.Buffer
 			msgBuf.WriteString("PANIC: ")
-			msgBuf.Write(entry.Message)
+			if entry.Message != nil {
+				msgBuf.Write(entry.Message)
+			}
 			msgBuf.WriteByte('\n')
 			_, _ = l.out.Write(msgBuf.Bytes())
 		}
@@ -820,24 +872,33 @@ func (l *Logger) handleError(err error) {
 	// Graceful error handling tanpa panic
 	if l.Config.ErrorHandler != nil {
 		l.Config.ErrorHandler(err)
-	} else {
-		// Ignore errors gracefully, jangan crash aplikasi
-		l.errOutMu.Lock()
-		defer l.errOutMu.Unlock()
-
-		// Use manual formatting with zero-allocation approach
-		buf := util.GetBuffer()
-		defer util.PutBuffer(buf)
-		buf.Write([]byte("logger error: "))
-		buf.Write(core.StringToBytes(err.Error())) // Use zero-allocation string to byte conversion
-		buf.Write([]byte("\n"))
-		_, _ = l.errOut.Write(buf.Bytes())
+		return
 	}
+
+	// Ignore errors gracefully, jangan crash aplikasi
+	if l.errOut == nil {
+		return
+	}
+
+	l.errOutMu.Lock()
+	defer l.errOutMu.Unlock()
+
+	// Use manual formatting with zero-allocation approach
+	buf := util.GetBuf()
+	defer util.PutBuf(buf)
+	buf.Write([]byte("logger error: "))
+	buf.Write(core.StringToBytes(err.Error()))
+	buf.Write([]byte("\n"))
+	_, _ = l.errOut.Write(buf.Bytes())
 }
 
 // Close gracefully closes the logger and its writers.
 // Handles all edge cases with graceful degradation
 func (l *Logger) Close() {
+	if l == nil {
+		return
+	}
+
 	// Ensure it's only closed once
 	if l.closed.CompareAndSwap(false, true) {
 		// Close async logger if present
@@ -879,6 +940,9 @@ func (l *Logger) Close() {
 
 // WithFields creates a new logger with additional fields
 func (l *Logger) WithFields(fields map[string]interface{}) *Logger {
+	if l == nil {
+		return nil
+	}
 	if len(fields) == 0 {
 		return l
 	}
@@ -946,21 +1010,43 @@ func (l *Logger) clone() *Logger {
 
 // --- Unified Public API ---
 
-// Log logs with level and message
-// Zero-allocation logging API using variadic parameters
 // LogZ logs with zero allocations using key-value pairs
 func (l *Logger) LogZ(ctx context.Context, level core.Level, msg []byte, keyvals ...[]byte) {
+	// Early return if logger is closed
+	if l.closed.Load() {
+		return
+	}
+
+	// Level filtering
 	if level < l.Config.Level {
 		return
 	}
+
+	// Sampling if enabled
+	if l.sampler != nil && !l.sampler.ShouldLog() {
+		return
+	}
+
 	l.logZero(ctx, level, msg, keyvals...)
 }
 
 // LogZC logs with context only (zero allocation)
 func (l *Logger) LogZC(ctx context.Context, level core.Level, msg []byte) {
+	// Early return if logger is closed
+	if l.closed.Load() {
+		return
+	}
+
+	// Level filtering
 	if level < l.Config.Level {
 		return
 	}
+
+	// Sampling if enabled
+	if l.sampler != nil && !l.sampler.ShouldLog() {
+		return
+	}
+
 	l.logZero(ctx, level, msg)
 }
 
@@ -1107,7 +1193,22 @@ func (l *Logger) ErrorCB(ctx context.Context, message []byte) {
 
 // FatalCB logs a message with FATAL level and extracts context information, then exits the application using []byte (zero-allocation)
 func (l *Logger) FatalCB(ctx context.Context, message []byte) {
-	l.log(ctx, core.FATAL, message, nil)
+	if l.closed.Load() {
+		return
+	}
+	if core.FATAL >= l.Config.Level {
+		l.log(ctx, core.FATAL, message, nil)
+	}
+}
+
+// PanicCB logs a message with PANIC level and extracts context information, then exits the application using []byte (zero-allocation)
+func (l *Logger) PanicCB(ctx context.Context, message []byte) {
+	if l.closed.Load() {
+		return
+	}
+	if core.PANIC >= l.Config.Level {
+		l.log(ctx, core.PANIC, message, nil)
+	}
 }
 
 // Context-aware logging methods (interface{} args)
@@ -1174,7 +1275,12 @@ func (l *Logger) Error(args ...interface{}) {
 }
 
 func (l *Logger) Fatal(args ...interface{}) {
-	l.LogCF(context.Background(), FATAL, l.formatArgsToBytes(args...), nil)
+	l.log(context.Background(), core.FATAL, l.formatArgsToBytes(args...), nil)
+}
+
+// Panic logs a message with PANIC level and triggers application exit
+func (l *Logger) Panic(args ...interface{}) {
+	l.log(context.Background(), core.PANIC, l.formatArgsToBytes(args...), nil)
 }
 
 // Context-aware legacy methods

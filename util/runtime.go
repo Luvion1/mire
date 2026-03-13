@@ -13,7 +13,7 @@ func GetCallerInfo(skip int) *core.Caller {
 		return nil
 	}
 
-	ci := core.GetCallerFromPool()
+	ci := core.GetCaller()
 	ci.File = filepath.Base(file)
 	ci.Line = line
 
@@ -42,12 +42,12 @@ func GetCallerInfo(skip int) *core.Caller {
 // and pointer to the pooled buffer. The caller is responsible for returning
 // buffer to pool using core.PutBuffer (via returned pointer).
 func GetStackTrace(depth int) ([]byte, *[]byte) {
-	bufPtr := core.GetBuffer()
+	bufPtr := core.GetBuf()
 	tempBuf := *bufPtr
 
 	n := runtime.Stack(tempBuf, false)
 	if n == 0 {
-		core.PutBuffer(bufPtr)
+		core.PutBuf(bufPtr)
 		return nil, nil
 	}
 

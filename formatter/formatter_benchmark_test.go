@@ -15,7 +15,7 @@ func BenchmarkCSVFormatter(b *testing.B) {
 	formatter.FieldOrder = []string{"timestamp", "level", "message", "pid", "trace_id"}
 
 	entry := createBenchmarkEntry()
-	defer core.PutEntryToPool(entry)
+	defer core.PutEntry(entry)
 
 	var buf bytes.Buffer
 	b.ResetTimer()
@@ -32,7 +32,7 @@ func BenchmarkJSONFormatter(b *testing.B) {
 	formatter.PrettyPrint = false
 
 	entry := createBenchmarkEntry()
-	defer core.PutEntryToPool(entry)
+	defer core.PutEntry(entry)
 
 	var buf bytes.Buffer
 	b.ResetTimer()
@@ -49,7 +49,7 @@ func BenchmarkJSONFormatterPretty(b *testing.B) {
 	formatter.PrettyPrint = true
 
 	entry := createBenchmarkEntry()
-	defer core.PutEntryToPool(entry)
+	defer core.PutEntry(entry)
 
 	var buf bytes.Buffer
 	b.ResetTimer()
@@ -68,7 +68,7 @@ func BenchmarkTextFormatter(b *testing.B) {
 	formatter.EnableColors = false
 
 	entry := createBenchmarkEntry()
-	defer core.PutEntryToPool(entry)
+	defer core.PutEntry(entry)
 
 	var buf bytes.Buffer
 	b.ResetTimer()
@@ -87,7 +87,7 @@ func BenchmarkTextFormatterWithColors(b *testing.B) {
 	formatter.EnableColors = true
 
 	entry := createBenchmarkEntry()
-	defer core.PutEntryToPool(entry)
+	defer core.PutEntry(entry)
 
 	var buf bytes.Buffer
 	b.ResetTimer()
@@ -104,7 +104,7 @@ func BenchmarkCSVFormatterBatch(b *testing.B) {
 	formatter.IncludeHeader = false
 
 	entry := createBenchmarkEntry()
-	defer core.PutEntryToPool(entry)
+	defer core.PutEntry(entry)
 
 	var buf bytes.Buffer
 	b.ResetTimer()
@@ -129,7 +129,7 @@ func BenchmarkAllFormatters(b *testing.B) {
 	}
 
 	entry := createBenchmarkEntry()
-	defer core.PutEntryToPool(entry)
+	defer core.PutEntry(entry)
 
 	for _, tt := range formatters {
 		b.Run(tt.name, func(b *testing.B) {
@@ -155,7 +155,7 @@ func BenchmarkFormatterWithFields(b *testing.B) {
 		{"Text", NewText()},
 	}
 
-	entry := core.GetEntryFromPool()
+	entry := core.GetEntry()
 	entry.Timestamp = time.Now()
 	entry.Level = core.INFO
 	entry.LevelName = core.StringToBytes("INFO")
@@ -179,7 +179,7 @@ func BenchmarkFormatterWithFields(b *testing.B) {
 		})
 	}
 
-	core.PutEntryToPool(entry)
+	core.PutEntry(entry)
 }
 
 // BenchmarkFormatterWithSensitiveData benchmarks formatters with sensitive data masking
@@ -199,7 +199,7 @@ func BenchmarkFormatterWithSensitiveData(b *testing.B) {
 	textFormatter.MaskSensitiveData = true
 	textFormatter.MaskValue = "[MASKED]"
 
-	entry := core.GetEntryFromPool()
+	entry := core.GetEntry()
 	entry.Timestamp = time.Now()
 	entry.Level = core.INFO
 	entry.LevelName = core.StringToBytes("INFO")
@@ -233,12 +233,12 @@ func BenchmarkFormatterWithSensitiveData(b *testing.B) {
 		})
 	}
 
-	core.PutEntryToPool(entry)
+	core.PutEntry(entry)
 }
 
 // at
 func createBenchmarkEntry() *core.LogEntry {
-	entry := core.GetEntryFromPool()
+	entry := core.GetEntry()
 	entry.Timestamp = time.Now()
 	entry.Level = core.INFO
 	entry.LevelName = core.StringToBytes("INFO")
@@ -258,7 +258,7 @@ func createBenchmarkEntry() *core.LogEntry {
 func BenchmarkFormatterConcurrent(b *testing.B) {
 	formatter := NewText()
 	entry := createBenchmarkEntry()
-	defer core.PutEntryToPool(entry)
+	defer core.PutEntry(entry)
 
 	b.ResetTimer()
 

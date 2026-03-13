@@ -67,11 +67,11 @@ func TestFileHookFire(t *testing.T) {
 	}()
 
 	// Create a log entry with ERROR level (should be logged)
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 	entry.Level = core.ERROR
 	entry.Message = []byte("test error message")
-	entry.Timestamp = core.GetEntryFromPool().Timestamp
+	entry.Timestamp = core.GetEntry().Timestamp
 
 	// Fire the hook - this should write to the file
 	err = hook.Fire(entry)
@@ -80,11 +80,11 @@ func TestFileHookFire(t *testing.T) {
 	}
 
 	// Create a log entry with INFO level (should NOT be logged)
-	infoEntry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(infoEntry)
+	infoEntry := core.GetEntry()
+	defer core.PutEntry(infoEntry)
 	infoEntry.Level = core.INFO
 	infoEntry.Message = []byte("test info message")
-	infoEntry.Timestamp = core.GetEntryFromPool().Timestamp
+	infoEntry.Timestamp = core.GetEntry().Timestamp
 
 	// Fire the hook - this should NOT write to the file
 	err = hook.Fire(infoEntry)
@@ -112,11 +112,11 @@ func TestFileHookFireError(t *testing.T) {
 	}
 
 	// Create a log entry
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 	entry.Level = core.ERROR
 	entry.Message = []byte("test message")
-	entry.Timestamp = core.GetEntryFromPool().Timestamp
+	entry.Timestamp = core.GetEntry().Timestamp
 
 	// Fire the hook - this should return an error
 	err = hook.Fire(entry)
@@ -149,11 +149,11 @@ func TestFileHookFireWriteError(t *testing.T) {
 	}
 
 	// Create a log entry with ERROR level
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 	entry.Level = core.ERROR
 	entry.Message = []byte("test message")
-	entry.Timestamp = core.GetEntryFromPool().Timestamp
+	entry.Timestamp = core.GetEntry().Timestamp
 
 	// Fire the hook - this should return an error
 	err := hook.Fire(entry)
@@ -271,11 +271,11 @@ func TestHookInterfaceImplementation(t *testing.T) {
 	var h Hook = hook
 
 	// Create a log entry for testing
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 	entry.Level = core.ERROR
 	entry.Message = []byte("test")
-	entry.Timestamp = core.GetEntryFromPool().Timestamp
+	entry.Timestamp = core.GetEntry().Timestamp
 
 	// Verify that the Fire method works through the interface
 	err = h.Fire(entry)

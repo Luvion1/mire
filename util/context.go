@@ -2,25 +2,73 @@ package util
 
 import (
 	"context"
+	"sync"
 )
 
 // contextKey is a type for context keys to avoid collisions
 type contextKey string
 
 const (
-	// TraceIDKey is the context key for trace ID
-	TraceIDKey contextKey = "trace_id"
-	// SpanIDKey is the context key for span ID
-	SpanIDKey contextKey = "span_id"
-	// UserIDKey is the context key for user ID
-	UserIDKey contextKey = "user_id"
-	// SessionIDKey is the context key for session ID
+	TraceIDKey   contextKey = "trace_id"
+	SpanIDKey    contextKey = "span_id"
+	UserIDKey    contextKey = "user_id"
 	SessionIDKey contextKey = "session_id"
-	// RequestIDKey is the context key for request ID
 	RequestIDKey contextKey = "request_id"
-	// ClientIPKey is the context key for client IP
-	ClientIPKey contextKey = "client_ip"
+	ClientIPKey  contextKey = "client_ip"
 )
+
+// ContextValues holds extracted context values as byte slices for zero-allocation
+type ContextValues struct {
+	TraceID   []byte
+	SpanID    []byte
+	UserID    []byte
+	SessionID []byte
+	RequestID []byte
+}
+
+var contextValuesPool = sync.Pool{
+	New: func() interface{} {
+		return &ContextValues{}
+	},
+}
+
+// GetContextValues gets a ContextValues from pool
+func GetContextValues() *ContextValues {
+	return contextValuesPool.Get().(*ContextValues)
+}
+
+// PutContextValues returns ContextValues to pool
+func PutContextValues(cv *ContextValues) {
+	cv.TraceID = nil
+	cv.SpanID = nil
+	cv.UserID = nil
+	cv.SessionID = nil
+	cv.RequestID = nil
+	contextValuesPool.Put(cv)
+}
+
+// ExtractToBytes extracts context values directly as []byte for zero allocation
+func ExtractToBytes(ctx context.Context) *ContextValues {
+	cv := GetContextValues()
+
+	if traceID, ok := ctx.Value(TraceIDKey).(string); ok && traceID != "" {
+		cv.TraceID = StringToBytes(traceID)
+	}
+	if spanID, ok := ctx.Value(SpanIDKey).(string); ok && spanID != "" {
+		cv.SpanID = StringToBytes(spanID)
+	}
+	if userID, ok := ctx.Value(UserIDKey).(string); ok && userID != "" {
+		cv.UserID = StringToBytes(userID)
+	}
+	if sessionID, ok := ctx.Value(SessionIDKey).(string); ok && sessionID != "" {
+		cv.SessionID = StringToBytes(sessionID)
+	}
+	if requestID, ok := ctx.Value(RequestIDKey).(string); ok && requestID != "" {
+		cv.RequestID = StringToBytes(requestID)
+	}
+
+	return cv
+}
 
 // WithTraceID adds trace ID to context
 func WithTraceID(ctx context.Context, traceID string) context.Context {
@@ -48,11 +96,8 @@ func WithRequestID(ctx context.Context, requestID string) context.Context {
 }
 
 // ExtractFromContext extracts all context values - Optimized version
-// ExtractFromContext mengekstrak semua nilai konteks - Versi efisien
 func ExtractFromContext(ctx context.Context) map[string]string {
 	result := GetMapStr()
-	// The defer putMapStringToPool(result) cannot be used here because the map is returned.
-	// The caller is responsible for returning the map to the pool.
 
 	if traceID, ok := ctx.Value(TraceIDKey).(string); ok && traceID != "" {
 		result["trace_id"] = traceID

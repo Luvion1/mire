@@ -11,31 +11,31 @@ func BenchmarkLogEntryPoolOperations(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		entry := GetEntryFromPool()
+		entry := GetEntry()
 		entry.Timestamp = time.Now()
 		entry.Level = INFO
 		entry.Message = []byte("test message")
 		entry.Fields["test"] = []byte(fmt.Sprintf("%d", i))
 
-		PutEntryToPool(entry)
+		PutEntry(entry)
 	}
 }
 
-// BenchmarkGetEntryFromPool benchmarks getting entries from the pool
-func BenchmarkGetEntryFromPool(b *testing.B) {
+// BenchmarkGetEntry benchmarks getting entries from the pool
+func BenchmarkGetEntry(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		entry := GetEntryFromPool()
+		entry := GetEntry()
 		// Don't return to pool to measure acquisition performance
 		// This tests the hot path of pool acquisition
-		PutEntryToPool(entry)
+		PutEntry(entry)
 	}
 }
 
-// BenchmarkPutEntryToPool benchmarks returning entries to the pool
-func BenchmarkPutEntryToPool(b *testing.B) {
+// BenchmarkPutEntry benchmarks returning entries to the pool
+func BenchmarkPutEntry(b *testing.B) {
 	entries := make([]*LogEntry, b.N)
 	for i := 0; i < b.N; i++ {
-		entries[i] = GetEntryFromPool()
+		entries[i] = GetEntry()
 		entries[i].Timestamp = time.Now()
 		entries[i].Level = DEBUG
 		entries[i].Message = []byte("test message")
@@ -44,14 +44,14 @@ func BenchmarkPutEntryToPool(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		PutEntryToPool(entries[i])
+		PutEntry(entries[i])
 	}
 }
 
 // BenchmarkLogEntryFormatLogToBytes benchmarks the log to bytes formatting
 func BenchmarkLogEntryFormatLogToBytes(b *testing.B) {
-	entry := GetEntryFromPool()
-	defer PutEntryToPool(entry)
+	entry := GetEntry()
+	defer PutEntry(entry)
 
 	entry.Timestamp = time.Now()
 	entry.Level = ERROR
@@ -100,13 +100,13 @@ func BenchmarkCallerPoolOperations(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		info := GetCallerFromPool()
+		info := GetCaller()
 		info.File = "test.go"
 		info.Line = i
 		info.Function = "BenchmarkFunction"
 		info.Package = "main"
 
-		PutCallerToPool(info)
+		PutCaller(info)
 	}
 }
 
@@ -115,11 +115,11 @@ func BenchmarkMapInterfacePoolOperations(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		m := GetMapByteFromPool()
+		m := GetMapByte()
 		m["key"] = []byte("value")
 		m["num"] = []byte(fmt.Sprintf("%d", i))
 
-		PutMapByteToPool(m)
+		PutMapByte(m)
 	}
 }
 
@@ -128,11 +128,11 @@ func BenchmarkMapFloatPoolOperations(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		m := GetMapFloatFromPool()
+		m := GetMapFloat()
 		m["metric1"] = 1.5
 		m["metric2"] = float64(i)
 
-		PutMapFloatToPool(m)
+		PutMapFloat(m)
 	}
 }
 
@@ -141,10 +141,10 @@ func BenchmarkBufferPoolOperations(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		buf := GetBuffer()
+		buf := GetBuf()
 		*buf = append(*buf, []byte("test data")...)
 
-		PutBuffer(buf)
+		PutBuf(buf)
 	}
 }
 
@@ -174,8 +174,8 @@ func BenchmarkInt64ToBytesConversion(b *testing.B) {
 
 // BenchmarkZeroAllocJSONSerialize benchmarks the zero-allocation JSON serialization
 func BenchmarkZeroAllocJSONSerialize(b *testing.B) {
-	entry := GetEntryFromPool()
-	defer PutEntryToPool(entry)
+	entry := GetEntry()
+	defer PutEntry(entry)
 
 	entry.Timestamp = time.Date(2023, 1, 1, 12, 0, 0, 0, time.UTC)
 	entry.Level = INFO

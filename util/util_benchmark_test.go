@@ -60,6 +60,19 @@ func BenchmarkFormatTimestamp(b *testing.B) {
 	}
 }
 
+// BenchmarkFormatTimestampBuf benchmarks the FormatTimestampBuf function (zero-allocation)
+func BenchmarkFormatTimestampBuf(b *testing.B) {
+	var buf []byte
+	timestamp := time.Now()
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		buf = buf[:0]
+		buf = FormatTimestampBuf(buf, timestamp)
+	}
+}
+
 // BenchmarkConvertValue benchmarks the ConvertValue function
 func BenchmarkConvertValue(b *testing.B) {
 	values := []interface{}{
@@ -131,9 +144,9 @@ func BenchmarkBufferPool(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		buf := GetBuffer()
+		buf := GetBuf()
 		buf.Write([]byte("test data for buffer pool benchmark"))
-		PutBuffer(buf)
+		PutBuf(buf)
 	}
 }
 
@@ -206,6 +219,21 @@ func BenchmarkExtractFromContext(b *testing.B) {
 	}
 }
 
+// BenchmarkExtractToBytes benchmarks the zero-allocation ExtractToBytes function
+func BenchmarkExtractToBytes(b *testing.B) {
+	ctx := context.Background()
+	ctx = WithTraceID(ctx, "trace-12345")
+	ctx = WithUserID(ctx, "user-67890")
+	ctx = WithRequestID(ctx, "req-abcde")
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		contextData := ExtractToBytes(ctx)
+		PutContextValues(contextData)
+	}
+}
+
 // BenchmarkGetCallerInfo benchmarks the GetCallerInfo function
 func BenchmarkGetCallerInfo(b *testing.B) {
 	b.ResetTimer()
@@ -213,7 +241,7 @@ func BenchmarkGetCallerInfo(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		info := GetCallerInfo(2) // Get info for calling function
 		if info != nil {
-			core.PutCallerToPool(info)
+			core.PutCaller(info)
 		}
 	}
 }
@@ -225,7 +253,7 @@ func BenchmarkGetStackTrace(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		stackTrace, bufPtr := GetStackTrace(10)
 		if stackTrace != nil && bufPtr != nil {
-			core.PutBuffer(bufPtr)
+			core.PutBuf(bufPtr)
 		}
 	}
 }
@@ -236,13 +264,13 @@ func BenchmarkGoroutineLocalBufferPool(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		localPool := GetGoroutineLocalBufferPool()
-		buf := localPool.GetBufferFromLocalPool()
+		buf := localPool.GetBufFromLocalPool()
 		if buf != nil {
-			localPool.PutBufferToLocalPool(buf)
+			localPool.PutBufToLocalPool(buf)
 		} else {
 			// Fallback to global pool if local is empty
-			globalBuf := GetBuffer()
-			PutBuffer(globalBuf)
+			globalBuf := GetBuf()
+			PutBuf(globalBuf)
 		}
 	}
 }
@@ -264,9 +292,9 @@ func BenchmarkStringSlicePool(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		slice := GetStringSliceFromPool()
+		slice := GetStringSlice()
 		slice = append(slice, "item1", "item2", "item3")
-		PutStringSliceToPool(slice)
+		PutStringSlice(slice)
 	}
 }
 

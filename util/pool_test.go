@@ -7,9 +7,9 @@ import (
 )
 
 func TestGetBuffer(t *testing.T) {
-	buf1 := GetBuffer()
+	buf1 := GetBuf()
 	if buf1 == nil {
-		t.Fatal("GetBuffer returned nil")
+		t.Fatal("GetBuf returned nil")
 	}
 
 	if buf1.Len() != 0 {
@@ -21,12 +21,12 @@ func TestGetBuffer(t *testing.T) {
 		t.Fatalf("Failed to write to buffer: %v", err)
 	}
 
-	PutBuffer(buf1)
+	PutBuf(buf1)
 
 	// Buffer might be the same one we just returned
-	buf2 := GetBuffer()
+	buf2 := GetBuf()
 	if buf2 == nil {
-		t.Fatal("GetBuffer returned nil after return")
+		t.Fatal("GetBuf returned nil after return")
 	}
 
 	// Buffer should be reset to empty state
@@ -34,11 +34,11 @@ func TestGetBuffer(t *testing.T) {
 		t.Errorf("Returned buffer from pool should have length 0, got %d", buf2.Len())
 	}
 
-	PutBuffer(buf2)
+	PutBuf(buf2)
 }
 
 func TestPutBuffer(t *testing.T) {
-	buf := GetBuffer()
+	buf := GetBuf()
 
 	buf.WriteString("some data")
 
@@ -47,10 +47,10 @@ func TestPutBuffer(t *testing.T) {
 	}
 
 	// This should reset it
-	PutBuffer(buf)
+	PutBuf(buf)
 
-	buf2 := GetBuffer()
-	defer PutBuffer(buf2)
+	buf2 := GetBuf()
+	defer PutBuf(buf2)
 
 	if buf2.Len() != 0 {
 		t.Errorf("Returned buffer should be empty, got length %d", buf2.Len())
@@ -159,9 +159,9 @@ func TestPutMapStr(t *testing.T) {
 
 // TestGetStringSliceFromPool tests the GetStringSliceFromPool function
 func TestGetStringSliceFromPool(t *testing.T) {
-	slice1 := GetStringSliceFromPool()
+	slice1 := GetStringSlice()
 	if slice1 == nil {
-		t.Fatal("GetStringSliceFromPool returned nil")
+		t.Fatal("GetStringSlice returned nil")
 	}
 
 	// Initially, the slice should have 0 length but some capacity
@@ -176,11 +176,11 @@ func TestGetStringSliceFromPool(t *testing.T) {
 	}
 
 	// Return to pool
-	PutStringSliceToPool(slice1)
+	PutStringSlice(slice1)
 
 	// Get another slice
-	slice2 := GetStringSliceFromPool()
-	defer PutStringSliceToPool(slice2)
+	slice2 := GetStringSlice()
+	defer PutStringSlice(slice2)
 
 	// It should be reset to 0 length
 	if len(slice2) != 0 {
@@ -190,17 +190,17 @@ func TestGetStringSliceFromPool(t *testing.T) {
 
 // TestPutStringSliceToPool tests the PutStringSliceToPool function
 func TestPutStringSliceToPool(t *testing.T) {
-	slice := GetStringSliceFromPool()
+	slice := GetStringSlice()
 
 	// Add some data
 	slice = append(slice, "test")
 
 	// Put it back
-	PutStringSliceToPool(slice)
+	PutStringSlice(slice)
 
 	// Get it again to check if it's properly reset
-	slice2 := GetStringSliceFromPool()
-	defer PutStringSliceToPool(slice2)
+	slice2 := GetStringSlice()
+	defer PutStringSlice(slice2)
 
 	if len(slice2) != 0 {
 		t.Errorf("Returned slice should be empty, got length %d", len(slice2))
@@ -219,8 +219,8 @@ func TestPoolMetrics(t *testing.T) {
 	initialMapPutCount := metrics.MapPutCount()
 
 	// Perform some pool operations
-	buf := GetBuffer()
-	PutBuffer(buf)
+	buf := GetBuf()
+	PutBuf(buf)
 
 	slice := GetSmallBuf()
 	PutSmallBuf(slice)
@@ -228,8 +228,8 @@ func TestPoolMetrics(t *testing.T) {
 	m := GetMapStr()
 	PutMapStr(m)
 
-	s := GetStringSliceFromPool()
-	PutStringSliceToPool(s)
+	s := GetStringSlice()
+	PutStringSlice(s)
 
 	newBufferGetCount := metrics.BufferGetCount()
 	newBufferPutCount := metrics.BufferPutCount()
@@ -274,8 +274,8 @@ func TestPoolMetricsConcurrent(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			for j := 0; j < operationsPerGoroutine; j++ {
-				buf := GetBuffer()
-				PutBuffer(buf)
+				buf := GetBuf()
+				PutBuf(buf)
 			}
 		}()
 	}
@@ -403,12 +403,12 @@ func TestGoroutineLocalBufferPool(t *testing.T) {
 	}
 
 	// Test getting from local pool
-	_ = localPool.GetBufferFromLocalPool()
+	_ = localPool.GetBufFromLocalPool()
 	// buf might be nil if the local pool is empty, which is expected
 
 	// Put a buffer to local pool
 	testBuf := bytes.NewBuffer(make([]byte, 0, 100))
-	_ = localPool.PutBufferToLocalPool(testBuf)
+	_ = localPool.PutBufToLocalPool(testBuf)
 	// returned might be false if the local pool is full, which is expected
 }
 
@@ -419,7 +419,7 @@ func TestPutBufferToLocalPoolFull(t *testing.T) {
 	// Fill up the local pool's channel
 	for i := 0; i < 10; i++ { // Default channel size is 10
 		buf := bytes.NewBuffer(make([]byte, 0, 100))
-		returned := localPool.PutBufferToLocalPool(buf)
+		returned := localPool.PutBufToLocalPool(buf)
 		// If returned is false, it means the local pool was full and it was put to global pool
 		if !returned {
 			// This is acceptable behavior
@@ -430,6 +430,6 @@ func TestPutBufferToLocalPoolFull(t *testing.T) {
 
 	// Try to put one more - this should return false and put to global pool
 	extraBuf := bytes.NewBuffer(make([]byte, 0, 100))
-	_ = localPool.PutBufferToLocalPool(extraBuf)
+	_ = localPool.PutBufToLocalPool(extraBuf)
 	// This might return false if local pool is full, which is expected behavior
 }

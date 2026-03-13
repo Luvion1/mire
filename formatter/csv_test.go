@@ -35,8 +35,8 @@ func TestCSVFormatterFormat(t *testing.T) {
 	cf.IncludeHeader = false
 
 	// Create a test log entry
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Timestamp = time.Now()
 	entry.Level = core.INFO
@@ -67,8 +67,8 @@ func TestCSVFormatterWithCustomFieldOrder(t *testing.T) {
 	cf.FieldOrder = []string{"timestamp", "level", "message", "pid"}
 	cf.IncludeHeader = false
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Timestamp = time.Now()
 	entry.Level = core.ERROR
@@ -98,8 +98,8 @@ func TestCSVFormatterWithHeader(t *testing.T) {
 	cf.FieldOrder = []string{"timestamp", "level", "message", "pid"}
 	cf.IncludeHeader = true
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Timestamp = time.Now()
 	entry.Level = core.INFO
@@ -201,8 +201,8 @@ func TestCSVFormatterFormatCSVField(t *testing.T) {
 	buf := &bytes.Buffer{}
 
 	// Create a basic entry to test field formatting
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 	entry.Timestamp = time.Now()
 	entry.Level = core.INFO
 	entry.Message = []byte("test message")
@@ -330,7 +330,7 @@ func TestCSVFormatterFormatCSVField(t *testing.T) {
 
 	// Clean up
 	if entry.Caller != nil {
-		core.PutCallerToPool(entry.Caller)
+		core.PutCaller(entry.Caller)
 	}
 }
 
@@ -340,8 +340,8 @@ func TestCSVFormatterWithFields(t *testing.T) {
 	cf.FieldOrder = []string{"timestamp", "level", "message", "custom_field1", "custom_field2"}
 	cf.IncludeHeader = false
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Timestamp = time.Now()
 	entry.Level = core.INFO
@@ -370,8 +370,8 @@ func TestCSVFormatterWithSensitiveFields(t *testing.T) {
 	cf.SensitiveFields = []string{"password", "token"}
 	cf.MaskValue = "***MASKED***"
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Timestamp = time.Now()
 	entry.Level = core.INFO
@@ -415,8 +415,8 @@ func TestCSVFormatterWithFieldTransformers(t *testing.T) {
 		},
 	}
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Timestamp = time.Now()
 	entry.Level = core.INFO
@@ -474,8 +474,8 @@ func TestCSVFormatterWithEmptyFieldOrder(t *testing.T) {
 	cf.FieldOrder = []string{} // Empty field order
 	cf.IncludeHeader = false
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Timestamp = time.Now()
 	entry.Level = core.INFO
@@ -504,8 +504,8 @@ func TestCSVFormatterWithNonexistentField(t *testing.T) {
 	cf.FieldOrder = []string{"nonexistent_field", "timestamp", "level"}
 	cf.IncludeHeader = false
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Timestamp = time.Now()
 	entry.Level = core.INFO

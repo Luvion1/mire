@@ -39,8 +39,8 @@ func TestJSONFormatterFormat(t *testing.T) {
 	jf := NewJSON()
 
 	// Create a test log entry
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Timestamp = time.Now()
 	entry.Level = core.INFO
@@ -89,8 +89,8 @@ func TestJSONFormatterWithPrettyPrint(t *testing.T) {
 	jf := NewJSON()
 	jf.PrettyPrint = true
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Timestamp = time.Now()
 	entry.Level = core.ERROR
@@ -119,8 +119,8 @@ func TestJSONFormatterWithPID(t *testing.T) {
 	jf := NewJSON()
 	jf.ShowPID = true
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Level = core.INFO
 	entry.Message = []byte("with PID")
@@ -151,8 +151,8 @@ func TestJSONFormatterWithCaller(t *testing.T) {
 	jf := NewJSON()
 	jf.ShowCaller = true
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Level = core.INFO
 	entry.Message = []byte("with caller")
@@ -184,8 +184,8 @@ func TestJSONFormatterWithCaller(t *testing.T) {
 func TestJSONFormatterWithFields(t *testing.T) {
 	jf := NewJSON()
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Level = core.INFO
 	entry.Message = []byte("with fields")
@@ -226,8 +226,8 @@ func TestJSONFormatterWithTraceInfo(t *testing.T) {
 	jf := NewJSON()
 	jf.ShowTrace = true
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Level = core.INFO
 	entry.Message = []byte("with trace info")
@@ -264,8 +264,8 @@ func TestJSONFormatterWithStackTrace(t *testing.T) {
 	jf := NewJSON()
 	jf.IncludeStackTrace = true
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Level = core.ERROR
 	entry.Message = []byte("with stack trace")
@@ -592,8 +592,8 @@ func TestJSONFormatterFieldKeyMapping(t *testing.T) {
 		"user_id": "uid",
 	}
 
-	entry := core.GetEntryFromPool()
-	defer core.PutEntryToPool(entry)
+	entry := core.GetEntry()
+	defer core.PutEntry(entry)
 
 	entry.Level = core.INFO
 	entry.Message = []byte("with field mapping")

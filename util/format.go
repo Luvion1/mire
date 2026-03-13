@@ -2,13 +2,18 @@ package util
 
 import (
 	"bytes"
-	"strconv" // Re-added strconv import
+	"strconv"
 	"time"
 
-	"github.com/Luvion1/mire/core"
+	"github.com/Luvion1/mire/errors"
 )
 
 func FormatValue(buf *bytes.Buffer, value interface{}, maxWidth int) {
+	if value == nil {
+		buf.WriteString("null")
+		return
+	}
+
 	// at
 	tempBuf := GetSmallBuf()
 	defer PutSmallBuf(tempBuf)
@@ -48,7 +53,7 @@ func FormatValue(buf *bytes.Buffer, value interface{}, maxWidth int) {
 	case bool:
 		content = strconv.AppendBool(tempBuf[:0], v) // at
 	case error:
-		if appender, ok := v.(core.ErrAppend); ok {
+		if appender, ok := v.(errors.ErrAppend); ok {
 			appender.AppendError(buf)
 			return
 		}
@@ -92,6 +97,69 @@ func FormatTimestamp(buf *bytes.Buffer, t time.Time, format string) {
 		tsBytes := t.AppendFormat(tempBuf[:0], format)
 		buf.Write(tsBytes)
 	}
+}
+
+// FormatTimestampBuf formats timestamp directly to a []byte slice
+func FormatTimestampBuf(buf []byte, t time.Time) []byte {
+	year, month, day := t.Date()
+	hour, min, sec := t.Clock()
+	nsec := t.Nanosecond()
+	_, offset := t.Zone()
+
+	buf = appendInt4Digits(buf, year)
+	buf = append(buf, '-')
+	buf = appendInt2Digits(buf, int(month))
+	buf = append(buf, '-')
+	buf = appendInt2Digits(buf, day)
+	buf = append(buf, 'T')
+	buf = appendInt2Digits(buf, hour)
+	buf = append(buf, ':')
+	buf = appendInt2Digits(buf, min)
+	buf = append(buf, ':')
+	buf = appendInt2Digits(buf, sec)
+	buf = append(buf, '.')
+	buf = appendInt3Digits(buf, nsec/1000000)
+
+	if offset == 0 {
+		buf = append(buf, 'Z')
+	} else {
+		if offset < 0 {
+			buf = append(buf, '-')
+			offset = -offset
+		} else {
+			buf = append(buf, '+')
+		}
+		buf = appendInt2Digits(buf, offset/3600)
+		buf = append(buf, ':')
+		buf = appendInt2Digits(buf, (offset%3600)/60)
+	}
+	return buf
+}
+
+func appendInt2Digits(buf []byte, n int) []byte {
+	if n < 10 {
+		buf = append(buf, '0')
+		buf = append(buf, byte('0'+n))
+		return buf
+	}
+	buf = append(buf, byte('0'+n/10))
+	buf = append(buf, byte('0'+n%10))
+	return buf
+}
+
+func appendInt3Digits(buf []byte, n int) []byte {
+	buf = append(buf, byte('0'+n/100))
+	buf = append(buf, byte('0'+(n/10)%10))
+	buf = append(buf, byte('0'+n%10))
+	return buf
+}
+
+func appendInt4Digits(buf []byte, n int) []byte {
+	buf = append(buf, byte('0'+n/1000))
+	buf = append(buf, byte('0'+(n/100)%10))
+	buf = append(buf, byte('0'+(n/10)%10))
+	buf = append(buf, byte('0'+n%10))
+	return buf
 }
 
 // formatRFC3339WithMillis formats RFC3339 timestamp with milliseconds manually
@@ -157,51 +225,33 @@ func formatSimpleWithMillis(buf *bytes.Buffer, t time.Time) {
 func writeInt2Digits(buf *bytes.Buffer, n int) {
 	if n < 10 {
 		buf.WriteByte('0')
+		buf.WriteByte(byte('0' + n))
+		return
 	}
+	buf.WriteByte(byte('0' + n/10))
 	buf.WriteByte(byte('0' + n%10))
-	if n >= 10 {
-		buf.WriteByte(byte('0' + n/10))
-	}
 }
 
 // writeInt3Digits writes a 3-digit integer (000-999)
 func writeInt3Digits(buf *bytes.Buffer, n int) {
-	if n < 100 {
-		buf.WriteByte('0')
-	}
-	if n < 10 {
-		buf.WriteByte('0')
-	}
-	buf.WriteByte(byte('0' + n%10))
-	if n >= 10 {
-		buf.WriteByte(byte('0' + (n/10)%10))
-	}
-	if n >= 100 {
-		buf.WriteByte(byte('0' + n/100))
-	}
+	hundreds := n / 100
+	tens := (n / 10) % 10
+	ones := n % 10
+	buf.WriteByte(byte('0' + hundreds))
+	buf.WriteByte(byte('0' + tens))
+	buf.WriteByte(byte('0' + ones))
 }
 
 // writeInt4Digits writes a 4-digit integer (0000-9999)
 func writeInt4Digits(buf *bytes.Buffer, n int) {
-	if n < 1000 {
-		buf.WriteByte('0')
-	}
-	if n < 100 {
-		buf.WriteByte('0')
-	}
-	if n < 10 {
-		buf.WriteByte('0')
-	}
-	buf.WriteByte(byte('0' + n%10))
-	if n >= 10 {
-		buf.WriteByte(byte('0' + (n/10)%10))
-	}
-	if n >= 100 {
-		buf.WriteByte(byte('0' + (n/100)%10))
-	}
-	if n >= 1000 {
-		buf.WriteByte(byte('0' + n/1000))
-	}
+	thousands := n / 1000
+	hundreds := (n / 100) % 10
+	tens := (n / 10) % 10
+	ones := n % 10
+	buf.WriteByte(byte('0' + thousands))
+	buf.WriteByte(byte('0' + hundreds))
+	buf.WriteByte(byte('0' + tens))
+	buf.WriteByte(byte('0' + ones))
 }
 
 // convertValueToString manually converts common types to string without fmt
@@ -252,12 +302,34 @@ func convertValueToString(value interface{}) string {
 
 // at
 func WriteInt(buf *bytes.Buffer, value int64) {
+	if buf == nil {
+		return
+	}
+	if value == 0 {
+		buf.WriteByte('0')
+		return
+	}
+
+	if value < 0 {
+		buf.WriteByte('-')
+		value = -value
+	}
+
+	// Use small buffer for digit collection
 	tempBuf := GetSmallBuf()
 	defer PutSmallBuf(tempBuf)
 
-	// Use AppendInt to format the integer
-	bytes := strconv.AppendInt(tempBuf[:0], value, 10) // at
-	buf.Write(bytes)
+	// Collect digits in reverse order
+	for value > 0 {
+		digit := value % 10
+		tempBuf = append(tempBuf, byte(digit)+'0')
+		value /= 10
+	}
+
+	// Write digits in correct order
+	for i := len(tempBuf) - 1; i >= 0; i-- {
+		buf.WriteByte(tempBuf[i])
+	}
 }
 
 // at
