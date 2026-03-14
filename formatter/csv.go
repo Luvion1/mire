@@ -15,14 +15,14 @@ type CSVFormatter struct {
 	TimestampFormat   string                              // Custom timestamp format
 	SensitiveFields   []string                            // List of sensitive field names to mask
 	MaskSensitiveData bool                                // Whether to mask sensitive data
-	MaskValue   string                              // String value to use for masking
+	MaskValue         string                              // String value to use for masking
 	FieldTransformers map[string]func(interface{}) string // Functions to transform field values
 }
 
 // NewCSVFormatter creates a new CSVFormatter
 func NewCSV() *CSVFormatter {
 	return &CSVFormatter{
-		MaskValue:       "[MASKED]",
+		MaskValue:         "[MASKED]",
 		FieldTransformers: make(map[string]func(interface{}) string),
 	}
 }
@@ -180,7 +180,7 @@ func (f *CSVFormatter) formatCSVField(buf *bytes.Buffer, field string, entry *co
 		if entry.Fields != nil {
 			val, exists = entry.Fields[field]
 		}
-		
+
 		if !exists && len(entry.KeyVals) > 0 {
 			for i := 0; i < len(entry.KeyVals); i += 2 {
 				if i+1 >= len(entry.KeyVals) {

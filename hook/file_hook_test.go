@@ -43,7 +43,7 @@ func TestFileHookCreationError(t *testing.T) {
 		t.Error("NewFileHook should have failed with invalid path")
 		// Close hook if it was created despite the error
 		if hook != nil {
-		_ = hook.Close()
+			_ = hook.Close()
 		}
 		return
 	}
@@ -135,7 +135,7 @@ func TestFileHookFireError(t *testing.T) {
 	}
 
 	_ = hook.Close()
-		_ = os.Remove(tempFile)
+	_ = os.Remove(tempFile)
 }
 
 // TestFileHookFireWriteError tests error handling when writer fails
@@ -191,7 +191,7 @@ func TestFileHookClose(t *testing.T) {
 	// Note: Whether closing an already closed file returns an error depends on the OS/file system
 	// For this test, we just ensure it doesn't panic
 
-		_ = os.Remove(tempFile)
+	_ = os.Remove(tempFile)
 }
 
 // TestFileHookCloseNilFile tests closing a hook with nil file

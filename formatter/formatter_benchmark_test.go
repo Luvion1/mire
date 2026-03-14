@@ -266,7 +266,7 @@ func BenchmarkFormatterConcurrent(b *testing.B) {
 		var buf bytes.Buffer
 		for pb.Next() {
 			buf.Reset()
-		_ = formatter.Format(&buf, entry)
+			_ = formatter.Format(&buf, entry)
 		}
 	})
 }

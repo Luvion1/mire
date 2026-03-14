@@ -93,7 +93,7 @@ func (f *JSONFormatter) formatManually(buf *bytes.Buffer, entry *core.LogEntry) 
 	buf.Write(jsonQuote)
 
 	// Add comma after message if more fields will follow
-	hasMoreFields := f.ShowPID || (f.ShowCaller && entry.Caller != nil) || len(entry.Fields) > 0 || 
+	hasMoreFields := f.ShowPID || (f.ShowCaller && entry.Caller != nil) || len(entry.Fields) > 0 ||
 		f.ShowTrace || (f.IncludeStackTrace && len(entry.StackTrace) > 0)
 	if hasMoreFields {
 		buf.Write(jsonComma)
@@ -104,7 +104,7 @@ func (f *JSONFormatter) formatManually(buf *bytes.Buffer, entry *core.LogEntry) 
 		buf.Write(jsonPidKey)
 		util.WriteInt(buf, int64(entry.PID))
 		// Add comma if more fields will follow
-		hasMoreAfterPID := (f.ShowCaller && entry.Caller != nil) || len(entry.Fields) > 0 || 
+		hasMoreAfterPID := (f.ShowCaller && entry.Caller != nil) || len(entry.Fields) > 0 ||
 			f.ShowTrace || (f.IncludeStackTrace && len(entry.StackTrace) > 0)
 		if hasMoreAfterPID {
 			buf.Write(jsonComma)
@@ -499,7 +499,7 @@ func (f *JSONFormatter) formatAllFields(buf *bytes.Buffer, fields map[string][]b
 	// Format key-value pairs - optimized path
 	keyLen := len(keyvals)
 	maskEnabled := f.MaskSensitiveData
-	
+
 	for i := 0; i < keyLen; i += 2 {
 		if i+1 >= keyLen {
 			break
@@ -515,7 +515,7 @@ func (f *JSONFormatter) formatAllFields(buf *bytes.Buffer, fields map[string][]b
 		buf.WriteByte('"')
 		buf.Write(k)
 		buf.Write([]byte("\":\""))
-		
+
 		// Only check for sensitive field if masking is enabled
 		if maskEnabled {
 			kStr := core.BytesToString(k)
@@ -551,7 +551,7 @@ func (f *JSONFormatter) formatAllFieldsIndented(buf *bytes.Buffer, fields map[st
 	copy(originalIndent, indentBytes)
 
 	buf.WriteByte('{')
-	
+
 	innerIndent := append(indentBytes, ' ', ' ')
 	first := true
 

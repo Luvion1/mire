@@ -18,7 +18,7 @@ func TestMemoryAllocations(t *testing.T) {
 				Level:  core.TRACE,
 				Output: io.Discard,
 				Formatter: &formatter.TextFormatter{
-					EnableColors:     false,
+					EnableColors:  false,
 					ShowTimestamp: false,
 					ShowCaller:    false,
 				},
@@ -35,7 +35,7 @@ func TestMemoryAllocations(t *testing.T) {
 				Level:  core.DEBUG,
 				Output: io.Discard,
 				Formatter: &formatter.TextFormatter{
-					EnableColors:     false,
+					EnableColors:  false,
 					ShowTimestamp: false,
 					ShowCaller:    false,
 				},
@@ -52,7 +52,7 @@ func TestMemoryAllocations(t *testing.T) {
 				Level:  core.INFO,
 				Output: io.Discard,
 				Formatter: &formatter.TextFormatter{
-					EnableColors:     false,
+					EnableColors:  false,
 					ShowTimestamp: false,
 					ShowCaller:    false,
 				},
@@ -69,7 +69,7 @@ func TestMemoryAllocations(t *testing.T) {
 				Level:  core.ERROR,
 				Output: io.Discard,
 				Formatter: &formatter.TextFormatter{
-					EnableColors:     false,
+					EnableColors:  false,
 					ShowTimestamp: false,
 					ShowCaller:    false,
 				},
@@ -127,7 +127,7 @@ func BenchmarkMemoryAllocations(b *testing.B) {
 			Level:  core.TRACE,
 			Output: io.Discard,
 			Formatter: &formatter.TextFormatter{
-				EnableColors:     false,
+				EnableColors:  false,
 				ShowTimestamp: false,
 				ShowCaller:    false,
 			},
@@ -146,7 +146,7 @@ func BenchmarkMemoryAllocations(b *testing.B) {
 			Level:  core.DEBUG,
 			Output: io.Discard,
 			Formatter: &formatter.TextFormatter{
-				EnableColors:     false,
+				EnableColors:  false,
 				ShowTimestamp: false,
 				ShowCaller:    false,
 			},
@@ -165,7 +165,7 @@ func BenchmarkMemoryAllocations(b *testing.B) {
 			Level:  core.INFO,
 			Output: io.Discard,
 			Formatter: &formatter.TextFormatter{
-				EnableColors:     false,
+				EnableColors:  false,
 				ShowTimestamp: false,
 				ShowCaller:    false,
 			},
@@ -184,7 +184,7 @@ func BenchmarkMemoryAllocations(b *testing.B) {
 			Level:  core.ERROR,
 			Output: io.Discard,
 			Formatter: &formatter.TextFormatter{
-				EnableColors:     false,
+				EnableColors:  false,
 				ShowTimestamp: false,
 				ShowCaller:    false,
 			},
@@ -206,7 +206,7 @@ func BenchmarkFormatterAllocations(b *testing.B) {
 			Level:  core.INFO,
 			Output: io.Discard,
 			Formatter: &formatter.TextFormatter{
-				EnableColors:     false,
+				EnableColors:  false,
 				ShowTimestamp: false, // Disable timestamp for benchmark consistency
 				ShowCaller:    false,
 			},
@@ -245,7 +245,7 @@ func BenchmarkFieldAllocations(b *testing.B) {
 			Level:  core.INFO,
 			Output: io.Discard,
 			Formatter: &formatter.TextFormatter{
-				EnableColors:     false,
+				EnableColors:  false,
 				ShowTimestamp: false,
 				ShowCaller:    false,
 			},
@@ -264,7 +264,7 @@ func BenchmarkFieldAllocations(b *testing.B) {
 			Level:  core.INFO,
 			Output: io.Discard,
 			Formatter: &formatter.TextFormatter{
-				EnableColors:     false,
+				EnableColors:  false,
 				ShowTimestamp: false,
 				ShowCaller:    false,
 			},
@@ -285,7 +285,7 @@ func BenchmarkFieldAllocations(b *testing.B) {
 			Level:  core.INFO,
 			Output: io.Discard,
 			Formatter: &formatter.TextFormatter{
-				EnableColors:     false,
+				EnableColors:  false,
 				ShowTimestamp: false,
 				ShowCaller:    false,
 			},
@@ -310,7 +310,7 @@ func BenchmarkFieldAllocations(b *testing.B) {
 			Level:  core.INFO,
 			Output: io.Discard,
 			Formatter: &formatter.TextFormatter{
-				EnableColors:     false,
+				EnableColors:  false,
 				ShowTimestamp: false,
 				ShowCaller:    false,
 			},
@@ -400,7 +400,7 @@ func BenchmarkThroughputLevels(b *testing.B) {
 				Level:  core.TRACE, // Set to lowest level to ensure all logs pass through
 				Output: io.Discard,
 				Formatter: &formatter.TextFormatter{
-					EnableColors:     false,
+					EnableColors:  false,
 					ShowTimestamp: false,
 					ShowCaller:    false,
 				},
@@ -454,7 +454,7 @@ func BenchmarkFormatters(b *testing.B) {
 			Level:  core.INFO,
 			Output: io.Discard,
 			Formatter: &formatter.TextFormatter{
-				EnableColors:     false,
+				EnableColors:  false,
 				ShowTimestamp: true,
 				ShowCaller:    false,
 			},
@@ -496,7 +496,7 @@ func BenchmarkAsyncLogging(b *testing.B) {
 			WorkerCount: 4,
 			ChannelSize: 1000,
 			Formatter: &formatter.TextFormatter{
-				EnableColors:     false,
+				EnableColors:  false,
 				ShowTimestamp: true,
 				ShowCaller:    false,
 			},
@@ -515,7 +515,7 @@ func BenchmarkAsyncLogging(b *testing.B) {
 			Level:  core.INFO,
 			Output: io.Discard,
 			Formatter: &formatter.TextFormatter{
-				EnableColors:     false,
+				EnableColors:  false,
 				ShowTimestamp: true,
 				ShowCaller:    false,
 			},
@@ -620,7 +620,7 @@ func TestBufferedPerformance(t *testing.T) {
 			Level:  core.INFO,
 			Output: io.Discard,
 			Formatter: &formatter.TextFormatter{
-				EnableColors:     false,
+				EnableColors:  false,
 				ShowTimestamp: false,
 				ShowCaller:    false,
 			},
@@ -642,7 +642,7 @@ func TestBufferedPerformance(t *testing.T) {
 			Output:     io.Discard,
 			BufferSize: 1000,
 			Formatter: &formatter.TextFormatter{
-				EnableColors:     false,
+				EnableColors:  false,
 				ShowTimestamp: false,
 				ShowCaller:    false,
 			},
@@ -704,7 +704,7 @@ func ExampleLogger_performance() {
 		WorkerCount: 4,          // to
 		ChannelSize: 1000,       // Buffer up to 1000 log messages
 		Formatter: &formatter.TextFormatter{
-			EnableColors:     false, // Disable colors for performance
+			EnableColors:  false, // Disable colors for performance
 			ShowTimestamp: true,  // Include timestamps
 			ShowCaller:    false, // Disable caller info for performance
 		},

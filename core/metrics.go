@@ -40,41 +40,41 @@ func GetCoreMetrics() *CoreMetrics {
 }
 
 // Entry metrics methods
-func (cm *CoreMetrics) IncEntryCreated() {
+func (cm *CoreMetrics) IncCreated() {
 	cm.EntryCreatedCount.Add(1)
 }
 
-func (cm *CoreMetrics) IncEntryReused() {
+func (cm *CoreMetrics) IncReused() {
 	cm.EntryReusedCount.Add(1)
 }
 
-func (cm *CoreMetrics) IncEntryPoolMiss() {
+func (cm *CoreMetrics) IncMiss() {
 	cm.EntryPoolMissCount.Add(1)
 }
 
-func (cm *CoreMetrics) IncEntrySerialized() {
+func (cm *CoreMetrics) IncSerialized() {
 	cm.EntrySerializedCount.Add(1)
 }
 
 // Buffer metrics methods
-func (cm *CoreMetrics) IncBufferGet() {
+func (cm *CoreMetrics) IncGets() {
 	cm.BufferGetCount.Add(1)
 }
 
-func (cm *CoreMetrics) IncBufferPut() {
+func (cm *CoreMetrics) IncPuts() {
 	cm.BufferPutCount.Add(1)
 }
 
-func (cm *CoreMetrics) IncBufferMiss() {
+func (cm *CoreMetrics) IncMisses() {
 	cm.BufferMissCount.Add(1)
 }
 
 // Slice metrics methods
-func (cm *CoreMetrics) IncSliceGet() {
+func (cm *CoreMetrics) IncSliceGets() {
 	cm.SliceGetCount.Add(1)
 }
 
-func (cm *CoreMetrics) IncSlicePut() {
+func (cm *CoreMetrics) IncSlicePuts() {
 	cm.SlicePutCount.Add(1)
 }
 
@@ -84,11 +84,11 @@ func (cm *CoreMetrics) IncError() {
 }
 
 // Timing methods
-func (cm *CoreMetrics) SetLastOperationTime(t time.Time) {
+func (cm *CoreMetrics) SetOpTime(t time.Time) {
 	cm.LastOperationTime.Store(t.UnixNano())
 }
 
-func (cm *CoreMetrics) AddProcessingTime(duration time.Duration) {
+func (cm *CoreMetrics) AddProcTime(duration time.Duration) {
 	cm.ProcessingTime.Add(int64(duration))
 }
 

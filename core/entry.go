@@ -153,8 +153,8 @@ func PutMapByte(m map[string][]byte) {
 	mapBytePool.Put(m)
 }
 
-// stringSlicePool is a pool for reusing string slices
-var stringSlicePool = sync.Pool{
+// strSlicePool is a pool for reusing string slices
+var strSlicePool = sync.Pool{
 	New: func() interface{} {
 		s := make([]string, 0, TagsSliceCapacity)
 		return &s
@@ -183,14 +183,14 @@ func PutBuf(buf *[]byte) {
 
 // GetStringSlice gets a string slice from the pool
 func GetStringSlice() *[]string {
-	s := stringSlicePool.Get().(*[]string)
+	s := strSlicePool.Get().(*[]string)
 	*s = (*s)[:0] // to
 	return s
 }
 
 // PutStringSlice returns a string slice to the pool
 func PutStringSlice(s *[]string) {
-	stringSlicePool.Put(s)
+	strSlicePool.Put(s)
 }
 
 // Global metrics instance - now using CoreMetrics
@@ -269,14 +269,14 @@ const (
 	MetricsMapCapacity = 4
 
 	// Performance optimization constants
-	PreallocatedPoolSize     = 32 // Number of pre-allocated entries
-	MaxOptimizedPathAttempts = 5  // Max attempts to use optimized path before fallback
+	PreallocatedPoolSize = 32 // Number of pre-allocated entries
+	MaxPathAttempts      = 5  // Max attempts to use optimized path before fallback
 )
 
 // GetEntry gets a LogEntry from the pool
 func GetEntry() *LogEntry {
 	// Fallback: Use regular goroutine-local pool
-	localPool := GetGoroutineLocalEntryPool()
+	localPool := GetLocalEntryPool()
 	return localPool.GetLocalEntry()
 }
 
@@ -287,11 +287,11 @@ func GetGlobalEntry() *LogEntry {
 	// Update metrics
 	if entry.Timestamp.IsZero() {
 		// New entry created (pool miss)
-		globalEntryMetrics.IncEntryPoolMiss()
-		globalEntryMetrics.IncEntryCreated()
+		globalEntryMetrics.IncMiss()
+		globalEntryMetrics.IncCreated()
 	} else {
 		// Entry reused
-		globalEntryMetrics.IncEntryReused()
+		globalEntryMetrics.IncReused()
 	}
 
 	// Reset fields to avoid data leakage
@@ -414,8 +414,8 @@ func getGoroutineID() uint64 {
 	return id
 }
 
-// GetGoroutineLocalEntryPool gets entry pool for current goroutine
-func GetGoroutineLocalEntryPool() *LocalPool {
+// GetLocalEntryPool gets entry pool for current goroutine
+func GetLocalEntryPool() *LocalPool {
 	gid := getGoroutineID()
 	now := time.Now()
 
@@ -466,7 +466,7 @@ func (g *LocalPool) GetLocalEntry() *LogEntry {
 		entry.Environment = nil
 
 		// Update metrics
-		globalEntryMetrics.IncEntryReused()
+		globalEntryMetrics.IncReused()
 		return entry
 	default:
 		// Pool empty, create new entry from global pool
@@ -488,7 +488,7 @@ func PutEntry(entry *LogEntry) {
 		entry.StackTraceBufPtr = nil
 	}
 	// Use goroutine-local pool if available
-	localPool := GetGoroutineLocalEntryPool()
+	localPool := GetLocalEntryPool()
 	localPool.PutLocalEntry(entry)
 }
 
@@ -737,8 +737,8 @@ func (le *LogEntry) int64ToBytes(buf []byte, value int64) []byte {
 	return append(buf, temp[i:]...)
 }
 
-// byteSlicePool for float formatting in core package
-var byteSlicePool = sync.Pool{
+// bufSlicePool for float formatting in core package
+var bufSlicePool = sync.Pool{
 	New: func() interface{} {
 		return make([]byte, 0, 32) // Size sufficient for float formatting
 	},
@@ -746,7 +746,7 @@ var byteSlicePool = sync.Pool{
 
 // GetByteSlice gets a byte slice from the pool
 func GetByteSlice() []byte {
-	return byteSlicePool.Get().([]byte)
+	return bufSlicePool.Get().([]byte)
 }
 
 // MaxSmallSlicePoolSize constant for compile-time configuration
@@ -759,7 +759,7 @@ const (
 func PutByteSlice(b []byte) {
 	b = b[:0] // to
 	//nolint:staticcheck // Reset slice length before returning to pool is intentional for reuse
-	byteSlicePool.Put(b)
+	bufSlicePool.Put(b)
 }
 
 // floatToBytes writes float64 to buffer without allocation
@@ -781,8 +781,8 @@ func (g *LocalPool) PutLocalEntry(entry *LogEntry) {
 	}
 
 	// Update metrics
-	globalEntryMetrics.IncEntrySerialized()
-	globalEntryMetrics.SetLastOperationTime(time.Now())
+	globalEntryMetrics.IncSerialized()
+	globalEntryMetrics.SetOpTime(time.Now())
 
 	// Try to put into local pool
 	select {

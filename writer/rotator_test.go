@@ -23,7 +23,7 @@ func TestNewRotator(t *testing.T) {
 		MaxBackups:      5,
 		LocalTime:       true,
 		Compress:        false,
-		RotateInterval:    time.Hour,
+		RotateInterval:  time.Hour,
 		FilenamePattern: "2006-01-02",
 	}
 
@@ -57,7 +57,7 @@ func TestNewRotatorError(t *testing.T) {
 	if err == nil {
 		t.Error("NewRotator should have failed with invalid path")
 		if rotatingWriter != nil {
-		_ = rotatingWriter.Close()
+			_ = rotatingWriter.Close()
 		}
 		return
 	}
@@ -303,7 +303,7 @@ func TestRotatorWithNonExistentDir(t *testing.T) {
 	if err == nil {
 		t.Error("NewRotator should have failed for non-existent directory")
 		if rotatingWriter != nil {
-		_ = rotatingWriter.Close()
+			_ = rotatingWriter.Close()
 		}
 		return
 	}

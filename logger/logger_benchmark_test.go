@@ -16,7 +16,7 @@ func BenchmarkBasicLogging(b *testing.B) {
 		Level:  core.INFO,
 		Output: &testWriteSyncer{},
 		Formatter: &formatter.TextFormatter{
-			EnableColors:     false,
+			EnableColors:  false,
 			ShowTimestamp: false,
 			ShowCaller:    false,
 		},
@@ -36,7 +36,7 @@ func BenchmarkLoggingWithFields(b *testing.B) {
 		Level:  core.INFO,
 		Output: &testWriteSyncer{},
 		Formatter: &formatter.TextFormatter{
-			EnableColors:     false,
+			EnableColors:  false,
 			ShowTimestamp: false,
 			ShowCaller:    false,
 		},
@@ -60,7 +60,7 @@ func BenchmarkContextAwareLogging(b *testing.B) {
 		Level:  core.INFO,
 		Output: &testWriteSyncer{},
 		Formatter: &formatter.TextFormatter{
-			EnableColors:     false,
+			EnableColors:  false,
 			ShowTimestamp: false,
 			ShowCaller:    false,
 		},
@@ -84,7 +84,7 @@ func BenchmarkAsyncLoggingOps(b *testing.B) {
 		Level:  core.INFO,
 		Output: &testWriteSyncer{},
 		Formatter: &formatter.TextFormatter{
-			EnableColors:     false,
+			EnableColors:  false,
 			ShowTimestamp: false,
 			ShowCaller:    false,
 		},
@@ -109,7 +109,7 @@ func BenchmarkConcurrentLogging(b *testing.B) {
 		Level:  core.INFO,
 		Output: &testWriteSyncer{},
 		Formatter: &formatter.TextFormatter{
-			EnableColors:     false,
+			EnableColors:  false,
 			ShowTimestamp: false,
 			ShowCaller:    false,
 		},
@@ -134,7 +134,7 @@ func BenchmarkSamplingLogging(b *testing.B) {
 		Level:  core.INFO,
 		Output: &testWriteSyncer{},
 		Formatter: &formatter.TextFormatter{
-			EnableColors:     false,
+			EnableColors:  false,
 			ShowTimestamp: false,
 			ShowCaller:    false,
 		},
@@ -156,7 +156,7 @@ func BenchmarkFormattedLogging(b *testing.B) {
 		Level:  core.INFO,
 		Output: &testWriteSyncer{},
 		Formatter: &formatter.TextFormatter{
-			EnableColors:       false,
+			EnableColors:    false,
 			ShowTimestamp:   true,
 			ShowCaller:      true,
 			ShowGoroutine:   true,
@@ -234,7 +234,7 @@ func BenchmarkMultipleLevels(b *testing.B) {
 		Level:  core.INFO,
 		Output: &testWriteSyncer{},
 		Formatter: &formatter.TextFormatter{
-			EnableColors:     false,
+			EnableColors:  false,
 			ShowTimestamp: false,
 			ShowCaller:    false,
 		},

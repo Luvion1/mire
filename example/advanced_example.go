@@ -36,11 +36,11 @@ func contextAwareExample() {
 	ctx = util.WithRequestID(ctx, "req-456-def")
 
 	log := logger.NewLogger(logger.LoggerConfig{
-		Level: core.DEBUG,
+		Level:  core.DEBUG,
 		Output: os.Stdout,
 		Formatter: &formatter.JSONFormatter{
-			TimestampFormat: logger.DEFAULT_TIMESTAMP_FORMAT,
-			ShowTrace:    true,
+			TimestampFormat:   logger.DEFAULT_TIMESTAMP_FORMAT,
+			ShowTrace:         true,
 			IncludeStackTrace: true,
 		},
 	})
@@ -59,15 +59,15 @@ func customFormatterExample() {
 	fmt.Println("\n--- Custom Formatter with Field Transformers Example ---")
 
 	jsonFormatter := &formatter.JSONFormatter{
-		TimestampFormat: logger.DEFAULT_TIMESTAMP_FORMAT,
-		ShowCaller:      true,
-		SensitiveFields: []string{"password", "token", "secret"},
+		TimestampFormat:   logger.DEFAULT_TIMESTAMP_FORMAT,
+		ShowCaller:        true,
+		SensitiveFields:   []string{"password", "token", "secret"},
 		MaskSensitiveData: true,
 	}
 
 	log := logger.NewLogger(logger.LoggerConfig{
-		Level:  core.INFO,
-		Output: os.Stdout,
+		Level:     core.INFO,
+		Output:    os.Stdout,
 		Formatter: jsonFormatter,
 	})
 	defer log.Close()
@@ -89,7 +89,7 @@ func hookExample() {
 	}
 
 	log := logger.NewLogger(logger.LoggerConfig{
-		Level: core.WARN,
+		Level:  core.WARN,
 		Output: os.Stdout,
 		Formatter: &formatter.JSONFormatter{
 			TimestampFormat: logger.DEFAULT_TIMESTAMP_FORMAT,
@@ -110,20 +110,20 @@ func performanceExample() {
 	fmt.Println("\n--- Performance Optimization Example ---")
 
 	perfLog := logger.NewLogger(logger.LoggerConfig{
-		Level:          core.INFO,
-		Output:         os.Stdout,
-		AsyncMode:      true,
-		WorkerCount:    8,
-		ChannelSize:    5000,
-		ProcessTimeout: 5 * time.Second,
-		NoTimeout:      true,
-		BufferSize:     4096,
-		FlushInterval:  50 * time.Millisecond,
-		NoLocking:      true,
+		Level:             core.INFO,
+		Output:            os.Stdout,
+		AsyncMode:         true,
+		WorkerCount:       8,
+		ChannelSize:       5000,
+		ProcessTimeout:    5 * time.Second,
+		NoTimeout:         true,
+		BufferSize:        4096,
+		FlushInterval:     50 * time.Millisecond,
+		NoLocking:         true,
 		IncludeStackTrace: false,
 		Formatter: &formatter.CSVFormatter{
-			IncludeHeader:   false,
-			SensitiveFields: []string{"password", "token"},
+			IncludeHeader:     false,
+			SensitiveFields:   []string{"password", "token"},
 			MaskSensitiveData: true,
 		},
 	})

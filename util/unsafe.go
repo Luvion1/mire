@@ -8,7 +8,7 @@ import (
 	"unsafe"
 )
 
-type ZeroAllocBuffer struct {
+type Buffer struct {
 	buf []byte
 	len int
 	_   [64 - unsafe.Sizeof(int(0))]byte // Padding for cache alignment
@@ -19,7 +19,7 @@ var (
 	ErrBufferOverflow = errors.New("buffer overflow")
 )
 
-func (b *ZeroAllocBuffer) WriteBytes(data []byte) error {
+func (b *Buffer) WriteBytes(data []byte) error {
 	if b.available() < len(data) {
 		return ErrBufferOverflow
 	}
@@ -30,7 +30,7 @@ func (b *ZeroAllocBuffer) WriteBytes(data []byte) error {
 }
 
 // WriteByte writes a single byte to the buffer
-func (b *ZeroAllocBuffer) WriteByte(c byte) error {
+func (b *Buffer) WriteByte(c byte) error {
 	if b.len >= len(b.buf) {
 		return ErrBufferOverflow
 	}
@@ -40,49 +40,49 @@ func (b *ZeroAllocBuffer) WriteByte(c byte) error {
 }
 
 // WriteString writes a string to the buffer
-func (b *ZeroAllocBuffer) WriteString(s string) error {
+func (b *Buffer) WriteString(s string) error {
 	return b.WriteBytes([]byte(s))
 }
 
 // available returns the available space in the buffer
-func (b *ZeroAllocBuffer) available() int {
+func (b *Buffer) available() int {
 	return len(b.buf) - b.len
 }
 
 // Bytes returns the buffer content
-func (b *ZeroAllocBuffer) Bytes() []byte {
+func (b *Buffer) Bytes() []byte {
 	return b.buf[:b.len]
 }
 
 // Len returns the length of the buffer content
-func (b *ZeroAllocBuffer) Len() int {
+func (b *Buffer) Len() int {
 	return b.len
 }
 
 // Reset resets the buffer
-func (b *ZeroAllocBuffer) Reset() {
+func (b *Buffer) Reset() {
 	b.len = 0
 }
 
-// ZeroAllocBufferPool is a pool of ZeroAllocBuffer instances
-var ZeroAllocBufferPool = sync.Pool{
+// BufferPool is a pool of Buffer instances
+var BufferPool = sync.Pool{
 	New: func() interface{} {
-		return &ZeroAllocBuffer{
+		return &Buffer{
 			buf: make([]byte, 0, MediumBufferSize), // Pre-allocated
 		}
 	},
 }
 
-// GetZeroAllocBuffer gets a ZeroAllocBuffer from the pool
-func GetZeroAllocBuffer() *ZeroAllocBuffer {
-	buf := ZeroAllocBufferPool.Get().(*ZeroAllocBuffer)
+// GetBuffer gets a Buffer from the pool
+func GetBuffer() *Buffer {
+	buf := BufferPool.Get().(*Buffer)
 	buf.Reset()
 	return buf
 }
 
-// PutZeroAllocBuffer returns a ZeroAllocBuffer to the pool
-func PutZeroAllocBuffer(buf *ZeroAllocBuffer) {
-	ZeroAllocBufferPool.Put(buf)
+// PutBuffer returns a Buffer to the pool
+func PutBuffer(buf *Buffer) {
+	BufferPool.Put(buf)
 }
 
 // ColorByteSlice represents pre-allocated color byte slices

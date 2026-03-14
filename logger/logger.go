@@ -517,7 +517,7 @@ func (l *Logger) writeZero(ctx context.Context, level core.Level, message []byte
 		l.handleError(err)
 		return
 	}
-	
+
 	bytesToWrite := buf.Bytes()
 
 	// Optimized write with minimal locking

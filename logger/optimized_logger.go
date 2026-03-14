@@ -12,8 +12,8 @@ import (
 	"github.com/Luvion1/mire/formatter"
 )
 
-// OptimizedLogger is an efficient logger version for minimal allocations
-type OptimizedLogger struct {
+// SimpleLogger is an efficient logger version for minimal allocations
+type SimpleLogger struct {
 	config     LoggerConfig
 	formatter  formatter.Formatter
 	out        io.Writer
@@ -24,8 +24,8 @@ type OptimizedLogger struct {
 	closed     atomic.Bool
 }
 
-// NewOptimizedLogger creates an efficient logger instance
-func NewOptimizedLogger(config LoggerConfig) *OptimizedLogger {
+// NewSimpleLogger creates an efficient logger instance
+func NewSimpleLogger(config LoggerConfig) *SimpleLogger {
 	if config.Output == nil {
 		config.Output = io.Discard
 	}
@@ -39,7 +39,7 @@ func NewOptimizedLogger(config LoggerConfig) *OptimizedLogger {
 		},
 	}
 
-	return &OptimizedLogger{
+	return &SimpleLogger{
 		config:     config,
 		formatter:  config.Formatter,
 		out:        config.Output,
@@ -50,7 +50,7 @@ func NewOptimizedLogger(config LoggerConfig) *OptimizedLogger {
 }
 
 // logInternal is the core efficient function for minimal allocations
-func (l *OptimizedLogger) logInternal(ctx context.Context, level core.Level, message []byte, fields map[string]interface{}) {
+func (l *SimpleLogger) logInternal(ctx context.Context, level core.Level, message []byte, fields map[string]interface{}) {
 	// Early return if logger is closed
 	if l.closed.Load() {
 		return
@@ -117,78 +117,78 @@ func (l *OptimizedLogger) logInternal(ctx context.Context, level core.Level, mes
 }
 
 // Basic logging level methods
-func (l *OptimizedLogger) Trace(args ...interface{}) {
+func (l *SimpleLogger) Trace(args ...interface{}) {
 	if core.TRACE >= l.level {
 		message := l.formatArgsToBytes(args...) // This should be efficient for only 1 allocation
 		l.logInternal(context.Background(), core.TRACE, message, nil)
 	}
 }
 
-func (l *OptimizedLogger) Debug(args ...interface{}) {
+func (l *SimpleLogger) Debug(args ...interface{}) {
 	if core.DEBUG >= l.level {
 		message := l.formatArgsToBytes(args...) // This should be efficient for only 1 allocation
 		l.logInternal(context.Background(), core.DEBUG, message, nil)
 	}
 }
 
-func (l *OptimizedLogger) Info(args ...interface{}) {
+func (l *SimpleLogger) Info(args ...interface{}) {
 	if core.INFO >= l.level {
 		message := l.formatArgsToBytes(args...) // This should be efficient for only 1 allocation
 		l.logInternal(context.Background(), core.INFO, message, nil)
 	}
 }
 
-func (l *OptimizedLogger) Warn(args ...interface{}) {
+func (l *SimpleLogger) Warn(args ...interface{}) {
 	if core.WARN >= l.level {
 		message := l.formatArgsToBytes(args...) // This should be efficient for only 1 allocation
 		l.logInternal(context.Background(), core.WARN, message, nil)
 	}
 }
 
-func (l *OptimizedLogger) Error(args ...interface{}) {
+func (l *SimpleLogger) Error(args ...interface{}) {
 	if core.ERROR >= l.level {
 		message := l.formatArgsToBytes(args...) // This should be efficient for only 1 allocation
 		l.logInternal(context.Background(), core.ERROR, message, nil)
 	}
 }
 
-func (l *OptimizedLogger) Tracef(format string, args ...interface{}) {
+func (l *SimpleLogger) Tracef(format string, args ...interface{}) {
 	if core.TRACE >= l.level {
-		message := l.formatfArgsToBytes(format, args...) // This should be efficient for only 1 allocation
+		message := l.FormatArgsToBytes(format, args...) // This should be efficient for only 1 allocation
 		l.logInternal(context.Background(), core.TRACE, message, nil)
 	}
 }
 
-func (l *OptimizedLogger) Debugf(format string, args ...interface{}) {
+func (l *SimpleLogger) Debugf(format string, args ...interface{}) {
 	if core.DEBUG >= l.level {
-		message := l.formatfArgsToBytes(format, args...) // This should be efficient for only 1 allocation
+		message := l.FormatArgsToBytes(format, args...) // This should be efficient for only 1 allocation
 		l.logInternal(context.Background(), core.DEBUG, message, nil)
 	}
 }
 
-func (l *OptimizedLogger) Infof(format string, args ...interface{}) {
+func (l *SimpleLogger) Infof(format string, args ...interface{}) {
 	if core.INFO >= l.level {
-		message := l.formatfArgsToBytes(format, args...) // This should be efficient for only 1 allocation
+		message := l.FormatArgsToBytes(format, args...) // This should be efficient for only 1 allocation
 		l.logInternal(context.Background(), core.INFO, message, nil)
 	}
 }
 
-func (l *OptimizedLogger) Warnf(format string, args ...interface{}) {
+func (l *SimpleLogger) Warnf(format string, args ...interface{}) {
 	if core.WARN >= l.level {
-		message := l.formatfArgsToBytes(format, args...) // This should be efficient for only 1 allocation
+		message := l.FormatArgsToBytes(format, args...) // This should be efficient for only 1 allocation
 		l.logInternal(context.Background(), core.WARN, message, nil)
 	}
 }
 
-func (l *OptimizedLogger) Errorf(format string, args ...interface{}) {
+func (l *SimpleLogger) Errorf(format string, args ...interface{}) {
 	if core.ERROR >= l.level {
-		message := l.formatfArgsToBytes(format, args...) // This should be efficient for only 1 allocation
+		message := l.FormatArgsToBytes(format, args...) // This should be efficient for only 1 allocation
 		l.logInternal(context.Background(), core.ERROR, message, nil)
 	}
 }
 
 // formatArgsToBytes converts arguments to byte slice with only 1 allocation
-func (l *OptimizedLogger) formatArgsToBytes(args ...interface{}) []byte {
+func (l *SimpleLogger) formatArgsToBytes(args ...interface{}) []byte {
 	// Use buffer from pool to combine arguments
 	buf := l.bufferPool.Get().(*bytes.Buffer)
 	defer func() {
@@ -228,8 +228,8 @@ func (l *OptimizedLogger) formatArgsToBytes(args ...interface{}) []byte {
 	return result
 }
 
-// formatfArgsToBytes converts formatted arguments to byte slice with only 1 allocation
-func (l *OptimizedLogger) formatfArgsToBytes(format string, args ...interface{}) []byte {
+// FormatArgsToBytes converts formatted arguments to byte slice with only 1 allocation
+func (l *SimpleLogger) FormatArgsToBytes(format string, args ...interface{}) []byte {
 	// Use buffer from pool to combine arguments
 	buf := l.bufferPool.Get().(*bytes.Buffer)
 	defer func() {
@@ -337,8 +337,8 @@ func formatString(format string, args ...interface{}) string {
 }
 
 // WithFields adds fields to logger
-func (l *OptimizedLogger) WithFields(fields map[string]interface{}) *OptimizedLogger {
-	newLogger := &OptimizedLogger{
+func (l *SimpleLogger) WithFields(fields map[string]interface{}) *SimpleLogger {
+	newLogger := &SimpleLogger{
 		config:     l.config,
 		formatter:  l.formatter,
 		out:        l.out,
@@ -359,8 +359,8 @@ func (l *OptimizedLogger) WithFields(fields map[string]interface{}) *OptimizedLo
 }
 
 // WithFieldsB adds fields to logger using []byte (zero-allocation)
-func (l *OptimizedLogger) WithFieldsB(fields map[string][]byte) *OptimizedLogger {
-	newLogger := &OptimizedLogger{
+func (l *SimpleLogger) WithFieldsB(fields map[string][]byte) *SimpleLogger {
+	newLogger := &SimpleLogger{
 		config:     l.config,
 		formatter:  l.formatter,
 		out:        l.out,
@@ -381,6 +381,6 @@ func (l *OptimizedLogger) WithFieldsB(fields map[string][]byte) *OptimizedLogger
 }
 
 // Close closes the logger
-func (l *OptimizedLogger) Close() {
+func (l *SimpleLogger) Close() {
 	l.closed.Store(true)
 }

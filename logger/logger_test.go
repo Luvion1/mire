@@ -22,7 +22,7 @@ func TestLoggerBasicOperations(t *testing.T) {
 		Level:  core.INFO,
 		Output: &buf,
 		Formatter: &formatter.TextFormatter{
-			EnableColors:     false,
+			EnableColors:  false,
 			ShowTimestamp: false,
 			ShowCaller:    false,
 		},
@@ -60,7 +60,7 @@ func TestLoggerWithFields(t *testing.T) {
 		Level:  core.INFO,
 		Output: &buf,
 		Formatter: &formatter.TextFormatter{
-			EnableColors:     false,
+			EnableColors:  false,
 			ShowTimestamp: false,
 			ShowCaller:    false,
 		},
@@ -96,7 +96,7 @@ func TestLoggerContextAware(t *testing.T) {
 		Level:  core.INFO,
 		Output: &buf,
 		Formatter: &formatter.TextFormatter{
-			EnableColors:     false,
+			EnableColors:  false,
 			ShowTimestamp: false,
 			ShowCaller:    false,
 		},
@@ -125,7 +125,7 @@ func TestLoggerConcurrentOperations(t *testing.T) {
 		Level:  core.INFO,
 		Output: &buf,
 		Formatter: &formatter.TextFormatter{
-			EnableColors:     false,
+			EnableColors:  false,
 			ShowTimestamp: false,
 			ShowCaller:    false,
 		},
@@ -166,7 +166,7 @@ func TestLoggerSampling(t *testing.T) {
 		Level:  core.INFO,
 		Output: &buf,
 		Formatter: &formatter.TextFormatter{
-			EnableColors:     false,
+			EnableColors:  false,
 			ShowTimestamp: false,
 			ShowCaller:    false,
 		},
@@ -196,7 +196,7 @@ func TestLoggerAsyncLogging(t *testing.T) {
 		Level:  core.INFO,
 		Output: &buf,
 		Formatter: &formatter.TextFormatter{
-			EnableColors:     false,
+			EnableColors:  false,
 			ShowTimestamp: false,
 			ShowCaller:    false,
 		},
@@ -237,7 +237,7 @@ func TestLoggerCloneAndFields(t *testing.T) {
 		Level:  core.INFO,
 		Output: &buf,
 		Formatter: &formatter.TextFormatter{
-			EnableColors:     false,
+			EnableColors:  false,
 			ShowTimestamp: false,
 			ShowCaller:    false,
 		},
@@ -279,7 +279,7 @@ func TestLoggerErrorHandling(t *testing.T) {
 		Output:      errWriter,
 		ErrorOutput: io.Discard, // Discard error output for test
 		Formatter: &formatter.TextFormatter{
-			EnableColors:     false,
+			EnableColors:  false,
 			ShowTimestamp: false,
 			ShowCaller:    false,
 		},
@@ -297,7 +297,7 @@ func TestLoggerClose(t *testing.T) {
 		Level:  core.INFO,
 		Output: &buf,
 		Formatter: &formatter.TextFormatter{
-			EnableColors:     false,
+			EnableColors:  false,
 			ShowTimestamp: false,
 			ShowCaller:    false,
 		},
@@ -319,7 +319,7 @@ func TestLoggerLevelFiltering(t *testing.T) {
 		Level:  core.WARN,
 		Output: &tempBuf,
 		Formatter: &formatter.TextFormatter{
-			EnableColors:     false,
+			EnableColors:  false,
 			ShowTimestamp: false,
 			ShowCaller:    false,
 		},

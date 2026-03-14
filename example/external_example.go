@@ -21,7 +21,7 @@ func ExternalServiceExample() {
 		Output: os.Stdout,
 		Formatter: &formatter.JSONFormatter{
 			TimestampFormat: logger.DEFAULT_TIMESTAMP_FORMAT,
-			ShowCaller:    true,
+			ShowCaller:      true,
 		},
 	})
 	defer log.Close()

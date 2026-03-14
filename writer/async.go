@@ -79,10 +79,10 @@ func NewAsyncLogger(processor LogProcessor, workerCount int, bufferSize int, log
 
 func (al *AsyncLogger) worker() {
 	defer al.wg.Done()
-	
+
 	// Pre-allocate a batch of jobs to reduce channel operations if possible
 	// But for now, we process one by one which is simpler
-	
+
 	for job := range al.logChan {
 		al.processJob(job)
 		putLogJob(job)

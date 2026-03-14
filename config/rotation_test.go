@@ -14,7 +14,7 @@ func TestRotationConfig(t *testing.T) {
 		MaxBackups:      10,
 		LocalTime:       true,
 		Compress:        false,
-		RotateInterval:    24 * time.Hour, // 1 day
+		RotateInterval:  24 * time.Hour, // 1 day
 		FilenamePattern: "2006-01-02",   // Go time format
 	}
 
@@ -330,7 +330,7 @@ func TestRotationConfigComparison(t *testing.T) {
 		MaxBackups:      5,
 		LocalTime:       true,
 		Compress:        false,
-		RotateInterval:    time.Minute,
+		RotateInterval:  time.Minute,
 		FilenamePattern: "test",
 	}
 
@@ -340,7 +340,7 @@ func TestRotationConfigComparison(t *testing.T) {
 		MaxBackups:      5,
 		LocalTime:       true,
 		Compress:        false,
-		RotateInterval:    time.Minute,
+		RotateInterval:  time.Minute,
 		FilenamePattern: "test",
 	}
 
