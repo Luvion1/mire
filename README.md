@@ -8,7 +8,7 @@
 ![Build](https://img.shields.io/badge/Build-Passing-brightgreen.svg)
 ![Maintained](https://img.shields.io/badge/Maintained-Yes-blue.svg)
 [![Go Reference](https://pkg.go.dev/badge/github.com/Luvion1/mire.svg)](https://pkg.go.dev/github.com/Luvion1/mire)
-[![Version](https://img.shields.io/badge/Version-v0.1.0-blue.svg)](https://github.com/Luvion1/mire/releases)
+[![Version](https://img.shields.io/badge/Version-v0.1.1-blue.svg)](https://github.com/Luvion1/mire/releases)
 
 <p align="center">
   <img src="https://github.com/egonelbre/gophers/blob/master/.thumb/animation/gopher-dance-long-3x.gif" alt="Gopher Logo" width="150" />
@@ -413,7 +413,7 @@ go test -bench=. ./...
 go run main.go
 ```
 
-### Benchmark Results (vv0.0.6)
+### Benchmark Results (v0.1.1)
 
 | Operation | Time per op | Allocs per op | Bytes per op |
 |-----------|-------------|---------------|--------------|
@@ -437,7 +437,7 @@ The Mire logging library has been tested across various performance aspects incl
 - **Architecture**: amd64
 - **Runner**: GitHub Actions standard runner
 
-### Memory Allocation Benchmarks (vv0.0.6)
+### Memory Allocation Benchmarks (v0.1.1)
 
 #### Core Operations Performance
 
@@ -461,7 +461,7 @@ The Mire logging library has been tested across various performance aspects incl
 
 Note: Significant improvement due to zero-allocation design with direct byte slice operations.
 
-#### Allocation Comparison by Formatter (vv0.0.6)
+#### Allocation Comparison by Formatter (v0.1.1)
 
 | Formatter | Time/Op | Bytes/Op | Allocs/Op |
 |-----------|---------|----------|-----------|
@@ -473,7 +473,7 @@ Note: Significant improvement due to zero-allocation design with direct byte sli
 
 Note: All formatters achieve excellent performance with zero-allocation batch operations.
 
-### Throughput Benchmarks (vv0.0.6)
+### Throughput Benchmarks (v0.1.1)
 
 #### Throughput by Number of Fields
 
@@ -496,7 +496,7 @@ Note: All formatters achieve excellent performance with zero-allocation batch op
 
 Note: Performance improved due to zero-allocation design.
 
-#### Throughput by Formatter (vv0.0.6)
+#### Throughput by Formatter (v0.1.1)
 
 | Formatter              | Time/Ops | Allocs/Operation |
 |------------------------|----------|------------------|
@@ -508,7 +508,7 @@ Note: Performance improved due to zero-allocation design.
 
 Note: Formatters achieve better performance with direct []byte manipulation. CSVFormatter batch shows exceptional performance with sub-22ns/op at zero allocations.
 
-### Special Benchmark Results
+### Special Benchmark Results (v0.1.1)
 
 #### Concurrent Logging Performance
 
@@ -532,7 +532,7 @@ Note: Formatters achieve better performance with direct []byte manipulation. CSV
 
 6. **Improved Architecture**: Uses []byte-first design and cache-friendly memory access patterns.
 
-The Mire logging library v0.0.4 is optimized for high-load applications requiring minimal allocations and maximum throughput.
+The Mire logging library v0.1.1 is optimized for high-load applications requiring minimal allocations and maximum throughput.
 
 ## 🏗️ Architecture
 
