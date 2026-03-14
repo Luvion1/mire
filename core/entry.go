@@ -3,7 +3,6 @@ package core
 import (
 	"runtime"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 	"unsafe"
@@ -381,34 +380,35 @@ type LocalPool struct {
 }
 
 // getGoroutineID gets the current goroutine ID by parsing runtime.Stack
+// Optimized with smaller buffer and faster parsing
 func getGoroutineID() uint64 {
-	var buf [64]byte
+	var buf [32]byte
 	n := runtime.Stack(buf[:], false)
-	if n == 0 {
+	if n < 10 {
 		return 0
 	}
 
-	// Parse "goroutine 123 [running]:" format
-	str := string(buf[:n])
-
-	// Find "goroutine "
-	idx := strings.Index(str, "goroutine ")
-	if idx == -1 {
+	// Parse "goroutine 123 [" format - faster parsing
+	// Find "goroutine " starting position
+	idx := 0
+	for i := 0; i < n-10; i++ {
+		if buf[i] == 'g' && i+10 <= n && string(buf[i:i+10]) == "goroutine " {
+			idx = i + 10
+			break
+		}
+	}
+	if idx == 0 {
 		return 0
 	}
 
-	// Find space after ID
-	idStart := idx + 10 // length of "goroutine "
-	endIdx := strings.Index(str[idStart:], " ")
-	if endIdx == -1 {
-		return 0
-	}
-
-	// Parse ID
-	idStr := str[idStart : idStart+endIdx]
-	id, err := strconv.ParseUint(idStr, 10, 64)
-	if err != nil {
-		return 0
+	// Parse digits until we hit non-digit
+	var id uint64
+	for i := idx; i < n; i++ {
+		c := buf[i]
+		if c < '0' || c > '9' {
+			break
+		}
+		id = id*10 + uint64(c-'0')
 	}
 
 	return id

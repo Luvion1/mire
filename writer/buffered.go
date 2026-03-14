@@ -87,6 +87,8 @@ func (bw *Buffered) Write(p []byte) (n int, err error) {
 	// In order to not retain the original buffer `p`, we must copy it.
 	buf := bw.bufferPool.Get().([]byte)
 	if cap(buf) < len(p) {
+		// Return the small buffer to pool before allocating a larger one
+		bw.bufferPool.Put(buf)
 		buf = make([]byte, len(p))
 	}
 	buf = buf[:len(p)]
@@ -99,9 +101,8 @@ func (bw *Buffered) Write(p []byte) (n int, err error) {
 	default:
 		// The buffer channel is full. Drop the log to prevent blocking.
 		atomic.AddInt64(&bw.droppedLogs, 1)
-		// We must return the buffer to the pool since it was not sent.
-		//nolint:staticcheck
-		bw.bufferPool.Put(buf[:0])
+		// Return the buffer to the pool since it was not sent
+		bw.bufferPool.Put(buf)
 		return len(p), nil
 	}
 }
@@ -217,8 +218,8 @@ func (bw *Buffered) flushBatch(batch [][]byte) {
 	combined := make([]byte, 0, totalSize)
 	for _, data := range batch {
 		combined = append(combined, data...)
-		//nolint:staticcheck
-		bw.bufferPool.Put(data[:0])
+		// Return buffer to pool with full capacity
+		bw.bufferPool.Put(data)
 	}
 
 	if _, err := bw.writer.Write(combined); err != nil {

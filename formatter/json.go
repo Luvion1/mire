@@ -496,9 +496,12 @@ func (f *JSONFormatter) formatAllFields(buf *bytes.Buffer, fields map[string][]b
 		buf.WriteByte('"')
 	}
 
-	// Format key-value pairs
-	for i := 0; i < len(keyvals); i += 2 {
-		if i+1 >= len(keyvals) {
+	// Format key-value pairs - optimized path
+	keyLen := len(keyvals)
+	maskEnabled := f.MaskSensitiveData
+	
+	for i := 0; i < keyLen; i += 2 {
+		if i+1 >= keyLen {
 			break
 		}
 		if !first {
@@ -506,14 +509,21 @@ func (f *JSONFormatter) formatAllFields(buf *bytes.Buffer, fields map[string][]b
 		}
 		first = false
 
-		k := core.BytesToString(keyvals[i])
+		k := keyvals[i]
 		v := keyvals[i+1]
 
 		buf.WriteByte('"')
-		buf.Write(keyvals[i])
+		buf.Write(k)
 		buf.Write([]byte("\":\""))
-		if f.MaskSensitiveData && f.isSensitiveField(k) {
-			buf.Write(f.MaskStringBytes)
+		
+		// Only check for sensitive field if masking is enabled
+		if maskEnabled {
+			kStr := core.BytesToString(k)
+			if f.isSensitiveField(kStr) {
+				buf.Write(f.MaskStringBytes)
+			} else {
+				escapeJSON(buf, v)
+			}
 		} else {
 			escapeJSON(buf, v)
 		}

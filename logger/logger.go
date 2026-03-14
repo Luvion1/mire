@@ -116,6 +116,12 @@ func validate(c *LoggerConfig) {
 			} else {
 				jf.MaskStringBytes = []byte(c.MaskValue)
 			}
+		} else if cf, ok := c.Formatter.(*formatter.CSVFormatter); ok {
+			if c.MaskValue == "" {
+				cf.MaskValue = "[MASKED]" // Default mask
+			} else {
+				cf.MaskValue = c.MaskValue
+			}
 		}
 	}
 
@@ -490,17 +496,9 @@ func (l *Logger) writeZero(ctx context.Context, level core.Level, message []byte
 	}
 	entry.PID = l.pid
 
-	// In synchronous mode, we don't need to copy message and keyvals
-	// because they won't be modified by the caller before we finish formatting.
-	// Copy keyvals to prevent race conditions
-	keyvalsCopy := make([][]byte, len(keyvals))
-	for i, kv := range keyvals {
-		kvCopy := make([]byte, len(kv))
-		copy(kvCopy, kv)
-		keyvalsCopy[i] = kvCopy
-	}
 	entry.Message = message
-	entry.KeyVals = keyvalsCopy
+	entry.KeyVals = make([][]byte, len(keyvals))
+	copy(entry.KeyVals, keyvals)
 
 	if l.Config.ShowCaller {
 		entry.Caller = util.GetCallerInfo(l.Config.CallerDepth)
@@ -779,24 +777,13 @@ func (l *Logger) buildEntryByte(ctx context.Context, level core.Level, message [
 			entry.Fields[k] = v // v is already []byte
 		}
 	} else if ctx != nil {
-		contextData := util.ExtractFromContext(ctx)
-		if contextData != nil {
-			for k, v := range contextData {
-				switch k {
-				case "trace_id":
-					entry.TraceID = core.StringToBytes(v)
-				case "span_id":
-					entry.SpanID = core.StringToBytes(v)
-				case "user_id":
-					entry.UserID = core.StringToBytes(v)
-				case "session_id":
-					entry.SessionID = core.StringToBytes(v)
-				case "request_id":
-					entry.RequestID = core.StringToBytes(v)
-				}
-			}
-			util.PutMapStr(contextData)
-		}
+		contextData := util.ExtractToBytes(ctx)
+		entry.TraceID = contextData.TraceID
+		entry.SpanID = contextData.SpanID
+		entry.UserID = contextData.UserID
+		entry.SessionID = contextData.SessionID
+		entry.RequestID = contextData.RequestID
+		util.PutContextValues(contextData)
 	}
 
 	// Caller info only if required to avoid overhead
