@@ -393,29 +393,29 @@ func TestSmallByteSlicePool(t *testing.T) {
 
 func TestGoroutineLocalBufferPool(t *testing.T) {
 	// Get the local pool for the current goroutine
-	localPool := GetGoroutineLocalBufferPool()
+	localPool := GetLocalBufferPool()
 	if localPool == nil {
-		t.Fatal("GetGoroutineLocalBufferPool returned nil")
+		t.Fatal("GetLocalBufferPool returned nil")
 	}
 
 	// Test getting from local pool
-	_ = localPool.GetBufFromLocalPool()
+	_ = localPool.GetBuf()
 	// buf might be nil if the local pool is empty, which is expected
 
 	// Put a buffer to local pool
 	testBuf := bytes.NewBuffer(make([]byte, 0, 100))
-	_ = localPool.PutBufToLocalPool(testBuf)
+	_ = localPool.PutBuf(testBuf)
 	// returned might be false if the local pool is full, which is expected
 }
 
 // TestPutBufferToLocalPoolFull tests what happens when the local pool is full
 func TestPutBufferToLocalPoolFull(t *testing.T) {
-	localPool := GetGoroutineLocalBufferPool()
+	localPool := GetLocalBufferPool()
 
 	// Fill up the local pool's channel
 	for i := 0; i < 10; i++ { // Default channel size is 10
 		buf := bytes.NewBuffer(make([]byte, 0, 100))
-		returned := localPool.PutBufToLocalPool(buf)
+		returned := localPool.PutBuf(buf)
 		// If returned is false, it means the local pool was full and it was put to global pool
 		if !returned {
 			// This is acceptable behavior
@@ -426,6 +426,6 @@ func TestPutBufferToLocalPoolFull(t *testing.T) {
 
 	// Try to put one more - this should return false and put to global pool
 	extraBuf := bytes.NewBuffer(make([]byte, 0, 100))
-	_ = localPool.PutBufToLocalPool(extraBuf)
+	_ = localPool.PutBuf(extraBuf)
 	// This might return false if local pool is full, which is expected behavior
 }

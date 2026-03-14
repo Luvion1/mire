@@ -329,19 +329,19 @@ func TestCoreMetrics(t *testing.T) {
 	initialSerialized := metrics.SerializedCount()
 
 	// Test increment methods
-	metrics.IncEntryCreated()
-	metrics.IncEntryReused()
-	metrics.IncEntryPoolMiss()
-	metrics.IncEntrySerialized()
+	metrics.IncCreated()
+	metrics.IncReused()
+	metrics.IncMiss()
+	metrics.IncSerialized()
 
 	if metrics.CreatedCount() != initialCreated+1 {
-		t.Error("IncEntryCreated did not increment properly")
+		t.Error("IncCreated did not increment properly")
 	}
 	if metrics.ReusedCount() != initialReused+1 {
-		t.Error("IncEntryReused did not increment properly")
+		t.Error("IncReused did not increment properly")
 	}
 	if metrics.PoolMissCount() != initialPoolMiss+1 {
-		t.Error("IncEntryPoolMiss did not increment properly")
+		t.Error("IncMiss did not increment properly")
 	}
 	if metrics.SerializedCount() != initialSerialized+1 {
 		t.Error("IncEntrySerialized did not increment properly")
@@ -404,12 +404,12 @@ func TestMetricsConcurrent(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		go func() {
 			for j := 0; j < 100; j++ {
-				metrics.IncEntryCreated()
-				metrics.IncEntryReused()
-				metrics.IncEntryPoolMiss()
-				metrics.IncEntrySerialized()
-				metrics.SetLastOperationTime(time.Now())
-				metrics.AddProcessingTime(time.Nanosecond)
+				metrics.IncCreated()
+				metrics.IncReused()
+				metrics.IncMiss()
+				metrics.IncSerialized()
+				metrics.SetOpTime(time.Now())
+				metrics.AddProcTime(time.Nanosecond)
 			}
 			done <- true
 		}()

@@ -21,125 +21,125 @@ func TestGetCoreMetrics(t *testing.T) {
 	}
 }
 
-// TestCoreMetricsIncEntryCreated tests the IncEntryCreated method
-func TestCoreMetricsIncEntryCreated(t *testing.T) {
+// TestCoreMetricsIncCreated tests the IncCreated method
+func TestCoreMetricsIncCreated(t *testing.T) {
 	metrics := GetCoreMetrics()
 
 	initialCount := metrics.CreatedCount()
-	metrics.IncEntryCreated()
+	metrics.IncCreated()
 	newCount := metrics.CreatedCount()
 
 	if newCount != initialCount+1 {
-		t.Errorf("IncEntryCreated: expected %d, got %d", initialCount+1, newCount)
+		t.Errorf("IncCreated: expected %d, got %d", initialCount+1, newCount)
 	}
 }
 
-// TestCoreMetricsIncEntryReused tests the IncEntryReused method
-func TestCoreMetricsIncEntryReused(t *testing.T) {
+// TestCoreMetricsIncReused tests the IncReused method
+func TestCoreMetricsIncReused(t *testing.T) {
 	metrics := GetCoreMetrics()
 
 	initialCount := metrics.ReusedCount()
-	metrics.IncEntryReused()
+	metrics.IncReused()
 	newCount := metrics.ReusedCount()
 
 	if newCount != initialCount+1 {
-		t.Errorf("IncEntryReused: expected %d, got %d", initialCount+1, newCount)
+		t.Errorf("IncReused: expected %d, got %d", initialCount+1, newCount)
 	}
 }
 
-// TestCoreMetricsIncEntryPoolMiss tests the IncEntryPoolMiss method
-func TestCoreMetricsIncEntryPoolMiss(t *testing.T) {
+// TestCoreMetricsIncMiss tests the IncMiss method
+func TestCoreMetricsIncMiss(t *testing.T) {
 	metrics := GetCoreMetrics()
 
 	initialCount := metrics.PoolMissCount()
-	metrics.IncEntryPoolMiss()
+	metrics.IncMiss()
 	newCount := metrics.PoolMissCount()
 
 	if newCount != initialCount+1 {
-		t.Errorf("IncEntryPoolMiss: expected %d, got %d", initialCount+1, newCount)
+		t.Errorf("IncMiss: expected %d, got %d", initialCount+1, newCount)
 	}
 }
 
-// TestCoreMetricsIncEntrySerialized tests the IncEntrySerialized method
-func TestCoreMetricsIncEntrySerialized(t *testing.T) {
+// TestCoreMetricsIncSerialized tests the IncSerialized method
+func TestCoreMetricsIncSerialized(t *testing.T) {
 	metrics := GetCoreMetrics()
 
 	initialCount := metrics.SerializedCount()
-	metrics.IncEntrySerialized()
+	metrics.IncSerialized()
 	newCount := metrics.SerializedCount()
 
 	if newCount != initialCount+1 {
-		t.Errorf("IncEntrySerialized: expected %d, got %d", initialCount+1, newCount)
+		t.Errorf("IncSerialized: expected %d, got %d", initialCount+1, newCount)
 	}
 }
 
-// TestCoreMetricsIncBufferGet tests the IncBufferGet method
-func TestCoreMetricsIncBufferGet(t *testing.T) {
+// TestCoreMetricsIncGets tests the IncGets method
+func TestCoreMetricsIncGets(t *testing.T) {
 	metrics := GetCoreMetrics()
 
 	initialCount := metrics.GetBufferMetrics()["gets"]
-	metrics.IncBufferGet()
+	metrics.IncGets()
 	newMetrics := metrics.GetBufferMetrics()
 	newCount := newMetrics["gets"]
 
 	if newCount != initialCount+1 {
-		t.Errorf("IncBufferGet: expected %d, got %d", initialCount+1, newCount)
+		t.Errorf("IncGets: expected %d, got %d", initialCount+1, newCount)
 	}
 }
 
-// TestCoreMetricsIncBufferPut tests the IncBufferPut method
-func TestCoreMetricsIncBufferPut(t *testing.T) {
+// TestCoreMetricsIncPuts tests the IncPuts method
+func TestCoreMetricsIncPuts(t *testing.T) {
 	metrics := GetCoreMetrics()
 
 	initialCount := metrics.GetBufferMetrics()["puts"]
-	metrics.IncBufferPut()
+	metrics.IncPuts()
 	newMetrics := metrics.GetBufferMetrics()
 	newCount := newMetrics["puts"]
 
 	if newCount != initialCount+1 {
-		t.Errorf("IncBufferPut: expected %d, got %d", initialCount+1, newCount)
+		t.Errorf("IncPuts: expected %d, got %d", initialCount+1, newCount)
 	}
 }
 
-// TestCoreMetricsIncBufferMiss tests the IncBufferMiss method
-func TestCoreMetricsIncBufferMiss(t *testing.T) {
+// TestCoreMetricsIncMisses tests the IncMisses method
+func TestCoreMetricsIncMisses(t *testing.T) {
 	metrics := GetCoreMetrics()
 
 	initialCount := metrics.GetBufferMetrics()["misses"]
-	metrics.IncBufferMiss()
+	metrics.IncMisses()
 	newMetrics := metrics.GetBufferMetrics()
 	newCount := newMetrics["misses"]
 
 	if newCount != initialCount+1 {
-		t.Errorf("IncBufferMiss: expected %d, got %d", initialCount+1, newCount)
+		t.Errorf("IncMisses: expected %d, got %d", initialCount+1, newCount)
 	}
 }
 
-// TestCoreMetricsIncSliceGet tests the IncSliceGet method
-func TestCoreMetricsIncSliceGet(t *testing.T) {
+// TestCoreMetricsIncSliceGets tests the IncSliceGets method
+func TestCoreMetricsIncSliceGets(t *testing.T) {
 	metrics := GetCoreMetrics()
 
 	initialCount := metrics.GetSliceMetrics()["gets"]
-	metrics.IncSliceGet()
+	metrics.IncSliceGets()
 	newMetrics := metrics.GetSliceMetrics()
 	newCount := newMetrics["gets"]
 
 	if newCount != initialCount+1 {
-		t.Errorf("IncSliceGet: expected %d, got %d", initialCount+1, newCount)
+		t.Errorf("IncSliceGets: expected %d, got %d", initialCount+1, newCount)
 	}
 }
 
-// TestCoreMetricsIncSlicePut tests the IncSlicePut method
-func TestCoreMetricsIncSlicePut(t *testing.T) {
+// TestCoreMetricsIncSlicePuts tests the IncSlicePuts method
+func TestCoreMetricsIncSlicePuts(t *testing.T) {
 	metrics := GetCoreMetrics()
 
 	initialCount := metrics.GetSliceMetrics()["puts"]
-	metrics.IncSlicePut()
+	metrics.IncSlicePuts()
 	newMetrics := metrics.GetSliceMetrics()
 	newCount := newMetrics["puts"]
 
 	if newCount != initialCount+1 {
-		t.Errorf("IncSlicePut: expected %d, got %d", initialCount+1, newCount)
+		t.Errorf("IncSlicePuts: expected %d, got %d", initialCount+1, newCount)
 	}
 }
 
@@ -157,12 +157,12 @@ func TestCoreMetricsIncError(t *testing.T) {
 	}
 }
 
-// TestCoreMetricsSetLastOperationTime tests the SetLastOperationTime method
-func TestCoreMetricsSetLastOperationTime(t *testing.T) {
+// TestCoreMetricsSetOpTime tests the SetOpTime method
+func TestCoreMetricsSetOpTime(t *testing.T) {
 	metrics := GetCoreMetrics()
 
 	newTime := time.Now()
-	metrics.SetLastOperationTime(newTime)
+	metrics.SetOpTime(newTime)
 
 	finalTime := time.Unix(0, metrics.GetTimingMetrics()["last_operation"])
 
@@ -172,19 +172,19 @@ func TestCoreMetricsSetLastOperationTime(t *testing.T) {
 	}
 }
 
-// TestCoreMetricsAddProcessingTime tests the AddProcessingTime method
-func TestCoreMetricsAddProcessingTime(t *testing.T) {
+// TestCoreMetricsAddProcTime tests the AddProcTime method
+func TestCoreMetricsAddProcTime(t *testing.T) {
 	metrics := GetCoreMetrics()
 
 	initialTime := metrics.GetTimingMetrics()["processing_time_ns"]
 	testDuration := 100 * time.Millisecond
-	metrics.AddProcessingTime(testDuration)
+	metrics.AddProcTime(testDuration)
 	newTime := metrics.GetTimingMetrics()["processing_time_ns"]
 
 	// We expect newTime to be initialTime + testDuration.Nanoseconds()
 	expected := initialTime + testDuration.Nanoseconds()
 	if newTime != expected {
-		t.Errorf("AddProcessingTime: expected %d, got %d", expected, newTime)
+		t.Errorf("AddProcTime: expected %d, got %d", expected, newTime)
 	}
 }
 
@@ -326,18 +326,18 @@ func TestCoreMetricsResetMetrics(t *testing.T) {
 	metrics := GetCoreMetrics()
 
 	// Set some metrics values
-	metrics.IncEntryCreated()
-	metrics.IncEntryReused()
-	metrics.IncEntryPoolMiss()
-	metrics.IncEntrySerialized()
-	metrics.IncBufferGet()
-	metrics.IncBufferPut()
-	metrics.IncBufferMiss()
-	metrics.IncSliceGet()
-	metrics.IncSlicePut()
+	metrics.IncCreated()
+	metrics.IncReused()
+	metrics.IncMiss()
+	metrics.IncSerialized()
+	metrics.IncGets()
+	metrics.IncPuts()
+	metrics.IncMisses()
+	metrics.IncSliceGets()
+	metrics.IncSlicePuts()
 	metrics.IncError()
-	metrics.SetLastOperationTime(time.Now())
-	metrics.AddProcessingTime(10 * time.Millisecond)
+	metrics.SetOpTime(time.Now())
+	metrics.AddProcTime(10 * time.Millisecond)
 
 	// Check that metrics have non-zero values
 	initialAll := metrics.GetAllMetrics()
@@ -412,16 +412,16 @@ func TestCoreMetricsConcurrent(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			for j := 0; j < operationsPerGoroutine; j++ {
-				metrics.IncEntryCreated()
-				metrics.IncEntryReused()
-				metrics.IncEntryPoolMiss()
-				metrics.IncEntrySerialized()
-				metrics.IncBufferGet()
-				metrics.IncBufferPut()
-				metrics.IncSliceGet()
+				metrics.IncCreated()
+				metrics.IncReused()
+				metrics.IncMiss()
+				metrics.IncSerialized()
+				metrics.IncGets()
+				metrics.IncPuts()
+				metrics.IncSliceGets()
 				metrics.IncError()
-				metrics.SetLastOperationTime(time.Now())
-				metrics.AddProcessingTime(time.Microsecond)
+				metrics.SetOpTime(time.Now())
+				metrics.AddProcTime(time.Microsecond)
 			}
 		}()
 	}
@@ -465,10 +465,10 @@ func TestCoreMetricsHitRatioCalculation(t *testing.T) {
 	// Scenario: 3 created, 7 reused (total 10 operations)
 	// Hit ratio = reused * 100 / (created + reused + 1) = 7 * 100 / (3 + 7 + 1) = 700 / 11 ≈ 63
 	for i := 0; i < 3; i++ {
-		metrics.IncEntryCreated()
+		metrics.IncCreated()
 	}
 	for i := 0; i < 7; i++ {
-		metrics.IncEntryReused()
+		metrics.IncReused()
 	}
 
 	entryMetrics := metrics.GetEntryMetrics()
@@ -487,8 +487,8 @@ func TestCoreMetricsHitRatioCalculation(t *testing.T) {
 	}
 
 	// Test with only created entries
-	metrics.IncEntryCreated()
-	metrics.IncEntryCreated()
+	metrics.IncCreated()
+	metrics.IncCreated()
 	entryMetrics = metrics.GetEntryMetrics()
 	hitRatio = entryMetrics["hit_ratio"]
 	// (0 * 100) / (2 + 0 + 1) = 0
@@ -498,8 +498,8 @@ func TestCoreMetricsHitRatioCalculation(t *testing.T) {
 
 	// Test with only reused entries
 	metrics.ResetMetrics()
-	metrics.IncEntryReused()
-	metrics.IncEntryReused()
+	metrics.IncReused()
+	metrics.IncReused()
 	entryMetrics = metrics.GetEntryMetrics()
 	hitRatio = entryMetrics["hit_ratio"]
 	// (2 * 100) / (0 + 2 + 1) = 200 / 3 ≈ 66

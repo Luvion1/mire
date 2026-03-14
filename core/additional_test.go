@@ -87,10 +87,10 @@ func TestCoreMetricsConcurrentUpdate(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			for j := 0; j < operations; j++ {
-				metrics.IncEntryCreated()
-				metrics.IncEntryReused()
-				metrics.IncEntryPoolMiss()
-				metrics.IncEntrySerialized()
+				metrics.IncCreated()
+				metrics.IncReused()
+				metrics.IncMiss()
+				metrics.IncSerialized()
 			}
 		}()
 	}

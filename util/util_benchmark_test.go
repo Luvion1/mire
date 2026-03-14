@@ -263,10 +263,10 @@ func BenchmarkGoroutineLocalBufferPool(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		localPool := GetGoroutineLocalBufferPool()
-		buf := localPool.GetBufFromLocalPool()
+		localPool := GetLocalBufferPool()
+		buf := localPool.GetBuf()
 		if buf != nil {
-			localPool.PutBufToLocalPool(buf)
+			localPool.PutBuf(buf)
 		} else {
 			// Fallback to global pool if local is empty
 			globalBuf := GetBuf()

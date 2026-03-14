@@ -252,25 +252,25 @@ func TestCoreMetricsOperations(t *testing.T) {
 	metrics.EntrySerializedCount.Store(0)
 
 	// Test increment operations
-	metrics.IncEntryCreated()
-	metrics.IncEntryCreated()
+	metrics.IncCreated()
+	metrics.IncCreated()
 	if metrics.CreatedCount() != 2 {
 		t.Errorf("Created count should be 2, got %d", metrics.CreatedCount())
 	}
 
-	metrics.IncEntryReused()
-	metrics.IncEntryReused()
-	metrics.IncEntryReused()
+	metrics.IncReused()
+	metrics.IncReused()
+	metrics.IncReused()
 	if metrics.ReusedCount() != 3 {
 		t.Errorf("Reused count should be 3, got %d", metrics.ReusedCount())
 	}
 
-	metrics.IncEntryPoolMiss()
+	metrics.IncMiss()
 	if metrics.PoolMissCount() != 1 {
 		t.Errorf("Pool miss count should be 1, got %d", metrics.PoolMissCount())
 	}
 
-	metrics.IncEntrySerialized()
+	metrics.IncSerialized()
 	if metrics.SerializedCount() != 1 {
 		t.Errorf("Serialized count should be 1, got %d", metrics.SerializedCount())
 	}
