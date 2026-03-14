@@ -292,9 +292,7 @@ func TestRotatorFilePermissions(t *testing.T) {
 	}
 }
 
-// at
 func TestRotatorWithNonExistentDir(t *testing.T) {
-	// at
 	rotationConfig := &config.RotationConfig{}
 
 	nonExistentFile := "/non/existent/dir/test.log"

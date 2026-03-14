@@ -182,7 +182,6 @@ func TestPrintLineEmpty(t *testing.T) {
 
 // TestSetupCustomTextLogger tests the setupCustomTextLogger function
 
-// at
 func TestMainFunctionDoesNotPanic(t *testing.T) {
 	// This test ensures that the main function completes without panicking
 	// We can't easily verify all functionality, but at least ensure it doesn't crash

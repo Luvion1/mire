@@ -8,7 +8,6 @@ import (
 	"github.com/Luvion1/mire/util"
 )
 
-// to
 var (
 	jsonTimestampKey = []byte("\"timestamp\":\"")
 	jsonLevelKey     = []byte("\"level_name\":\"")

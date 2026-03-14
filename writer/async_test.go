@@ -226,12 +226,10 @@ func TestAsyncLoggerWithTimeout(t *testing.T) {
 	}
 }
 
-// at
 func TestAsyncLoggerWithoutTimeout(t *testing.T) {
 	processor := &mockLogProcessor{}
 
-	// at
-	asyncLogger := NewAsyncLogger(processor, 2, 100, 0, true) // at
+	asyncLogger := NewAsyncLogger(processor, 2, 100, 0, true)
 	if asyncLogger == nil {
 		t.Fatal("NewAsyncLogger returned nil")
 	}
@@ -285,10 +283,8 @@ func TestAsyncLoggerWorkerPanicRecovery(t *testing.T) {
 
 	ctx := context.Background()
 
-	// to
 	asyncLogger.Log(core.INFO, []byte("panic test"), nil, ctx)
 
-	// to
 	time.Sleep(100 * time.Millisecond)
 
 	// The logger should still be functional after the panic/recovery
@@ -324,7 +320,6 @@ func TestAsyncLoggerConcurrent(t *testing.T) {
 		}(i)
 	}
 
-	// at
 	for i := 0; i < numGoroutines; i++ {
 		<-done
 	}
@@ -384,7 +379,6 @@ func TestAsyncLoggerWorker(t *testing.T) {
 
 	ctx := context.Background()
 
-	// at
 	job := &logJob{
 		level:  core.INFO,
 		msg:    []byte("direct job"),
@@ -424,13 +418,12 @@ func TestAsyncLoggerClosedBehavior(t *testing.T) {
 		t.Fatal("NewAsyncLogger returned nil")
 	}
 
-	// at
 	asyncLogger.Close()
 
 	// Try to log after closing - this should not panic
 	ctx := context.Background()
 	asyncLogger.Log(core.INFO, []byte("message after close"), nil, ctx)
 
-	// at
+	// The message might not be processed since the logger is closed
 	// but it should not cause a panic
 }

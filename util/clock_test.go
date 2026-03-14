@@ -131,7 +131,7 @@ func TestClockMetrics(t *testing.T) {
 	// Check that update count has increased
 	newUpdateCount := metrics.UpdateCount()
 	if newUpdateCount <= initialUpdateCount {
-		t.Log("Update count might not have increased due to timing - this could be acceptable") // at
+		t.Log("Update count might not have increased due to timing - this could be acceptable")
 	}
 
 	// Error count should still be 0
@@ -198,7 +198,6 @@ func TestClockTimeToBytes(t *testing.T) {
 		t.Error("TimeToBytes should return non-empty bytes")
 	}
 
-	// to
 	timeStr := string(timeBytes)
 	if len(timeStr) < 10 { // Basic check for reasonable time format
 		t.Errorf("TimeToBytes returned string that's too short: '%s'", timeStr)
@@ -248,7 +247,6 @@ func TestGlobalClock(t *testing.T) {
 	}
 }
 
-// at
 func TestClockInitialization(t *testing.T) {
 	tests := []struct {
 		name     string

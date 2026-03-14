@@ -198,7 +198,6 @@ func TestBufferPoolOperations(t *testing.T) {
 	// Put back to pool
 	PutBuf(buf)
 
-	// to
 	buf2 := GetBuf()
 	defer PutBuf(buf2)
 

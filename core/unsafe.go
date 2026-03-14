@@ -17,7 +17,6 @@ func StringToBytes(s string) (b []byte) {
 
 // BytesToString converts a byte slice to a string without memory allocation.
 // WARNING: The returned string shares memory with the byte slice.
-// at
 func BytesToString(b []byte) (s string) {
 	bh := (*[2]int)(unsafe.Pointer(&b))
 	sh := (*[3]int)(unsafe.Pointer(&s))

@@ -12,7 +12,6 @@ import (
 	"github.com/Luvion1/mire/util"
 )
 
-// at
 func TestAdditionalLoggerFeatures(t *testing.T) {
 	// Test logger with various configuration options
 	var buf bytes.Buffer
@@ -205,7 +204,6 @@ func TestLoggerWithSampling(t *testing.T) {
 	}
 }
 
-// at
 func TestLoggerWithDisableLocking(t *testing.T) {
 	var buf bytes.Buffer
 	logger := New(LoggerConfig{

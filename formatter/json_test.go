@@ -58,7 +58,6 @@ func TestJSONFormatterFormat(t *testing.T) {
 		t.Error("JSONFormatter.Format produced empty output")
 	}
 
-	// to
 	if !bytes.Contains(buf.Bytes(), []byte("{")) || !bytes.Contains(buf.Bytes(), []byte("}")) {
 		t.Error("Output should contain JSON object delimiters")
 	}
@@ -611,8 +610,4 @@ func TestJSONFormatterFieldKeyMapping(t *testing.T) {
 	if len(output) == 0 {
 		t.Error("JSONFormatter.Format with field mapping produced empty output")
 	}
-
-	// to
-	// at
-	// to
 }

@@ -383,15 +383,11 @@ func TestLogBufferFull(t *testing.T) {
 
 // TestSmallByteSlicePool tests the behavior of small byte slice pool with size limits
 func TestSmallByteSlicePool(t *testing.T) {
-	// to
 	// This should cause it to not be returned to the pool in PutSmallBuf
 	largeSlice := make([]byte, MaxSmallSlicePoolSize+10) // Larger than the limit
 
-	// at
 	PutSmallBuf(largeSlice)
 
-	// at
-	// at
 	// For now, just ensure it doesn't panic
 }
 

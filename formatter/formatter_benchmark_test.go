@@ -236,7 +236,6 @@ func BenchmarkFormatterWithSensitiveData(b *testing.B) {
 	core.PutEntry(entry)
 }
 
-// at
 func createBenchmarkEntry() *core.LogEntry {
 	entry := core.GetEntry()
 	entry.Timestamp = time.Now()

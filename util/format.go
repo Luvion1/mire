@@ -14,7 +14,6 @@ func FormatValue(buf *bytes.Buffer, value interface{}, maxWidth int) {
 		return
 	}
 
-	// at
 	tempBuf := GetSmallBuf()
 	defer PutSmallBuf(tempBuf)
 
@@ -27,31 +26,31 @@ func FormatValue(buf *bytes.Buffer, value interface{}, maxWidth int) {
 	case []byte:
 		content = v
 	case int:
-		content = strconv.AppendInt(tempBuf[:0], int64(v), 10) // at
+		content = strconv.AppendInt(tempBuf[:0], int64(v), 10)
 	case int8:
-		content = strconv.AppendInt(tempBuf[:0], int64(v), 10) // at
+		content = strconv.AppendInt(tempBuf[:0], int64(v), 10)
 	case int16:
-		content = strconv.AppendInt(tempBuf[:0], int64(v), 10) // at
+		content = strconv.AppendInt(tempBuf[:0], int64(v), 10)
 	case int32:
-		content = strconv.AppendInt(tempBuf[:0], int64(v), 10) // at
+		content = strconv.AppendInt(tempBuf[:0], int64(v), 10)
 	case int64:
-		content = strconv.AppendInt(tempBuf[:0], v, 10) // at
+		content = strconv.AppendInt(tempBuf[:0], v, 10)
 	case uint:
-		content = strconv.AppendUint(tempBuf[:0], uint64(v), 10) // at
+		content = strconv.AppendUint(tempBuf[:0], uint64(v), 10)
 	case uint8:
-		content = strconv.AppendUint(tempBuf[:0], uint64(v), 10) // at
+		content = strconv.AppendUint(tempBuf[:0], uint64(v), 10)
 	case uint16:
-		content = strconv.AppendUint(tempBuf[:0], uint64(v), 10) // at
+		content = strconv.AppendUint(tempBuf[:0], uint64(v), 10)
 	case uint32:
-		content = strconv.AppendUint(tempBuf[:0], uint64(v), 10) // at
+		content = strconv.AppendUint(tempBuf[:0], uint64(v), 10)
 	case uint64:
-		content = strconv.AppendUint(tempBuf[:0], v, 10) // at
+		content = strconv.AppendUint(tempBuf[:0], v, 10)
 	case float32:
 		content = strconv.AppendFloat(tempBuf[:0], float64(v), 'f', 2, 32) // 'f' format, 2 decimal places, 32-bit float
 	case float64:
 		content = strconv.AppendFloat(tempBuf[:0], v, 'f', 2, 64) // 'f' format, 2 decimal places, 64-bit float
 	case bool:
-		content = strconv.AppendBool(tempBuf[:0], v) // at
+		content = strconv.AppendBool(tempBuf[:0], v)
 	case error:
 		if appender, ok := v.(errors.ErrAppend); ok {
 			appender.AppendError(buf)
@@ -294,13 +293,10 @@ func convertValueToString(value interface{}) string {
 	case nil:
 		return "null"
 	default:
-		// For complex types that can't be easily converted
-		// at
 		return "<complex-type>"
 	}
 }
 
-// at
 func WriteInt(buf *bytes.Buffer, value int64) {
 	if buf == nil {
 		return
@@ -332,23 +328,19 @@ func WriteInt(buf *bytes.Buffer, value int64) {
 	}
 }
 
-// at
 func WriteUint(buf *bytes.Buffer, value uint64) {
 	tempBuf := GetSmallBuf()
 	defer PutSmallBuf(tempBuf)
 
-	// Use AppendUint to format the unsigned integer
-	bytes := strconv.AppendUint(tempBuf[:0], value, 10) // at
+	bytes := strconv.AppendUint(tempBuf[:0], value, 10)
 	buf.Write(bytes)
 }
 
-// at
 func WriteFloat(buf *bytes.Buffer, value float64) {
 	tempBuf := GetSmallBuf()
 	defer PutSmallBuf(tempBuf)
 
-	// Use AppendFloat to format the float
-	bytes := strconv.AppendFloat(tempBuf[:0], value, 'g', -1, 64) // at
+	bytes := strconv.AppendFloat(tempBuf[:0], value, 'g', -1, 64)
 	buf.Write(bytes)
 }
 
@@ -391,8 +383,6 @@ func ConvertValue(value interface{}) string {
 	case nil:
 		return "null"
 	default:
-		// For complex types that can't be easily converted
-		// at
 		return "<complex-type>"
 	}
 }

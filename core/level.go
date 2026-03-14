@@ -24,11 +24,8 @@ const (
 	DEBUG
 
 	// INFO level for general information messages
-	// INFO level for general information messages
 	INFO
 
-	// at
-	// at
 	NOTICE
 
 	// WARN level for warning messages
@@ -43,8 +40,6 @@ const (
 	// FATAL level for critical errors that cause program to stop
 	FATAL
 
-	// at
-	// at
 	PANIC
 )
 

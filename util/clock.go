@@ -35,7 +35,7 @@ type Clock struct {
 	stop       chan struct{}
 	wg         sync.WaitGroup
 	metrics    *ClockMetrics
-	_          [64 - unsafe.Sizeof(time.Duration(0))]byte // at
+	_          [64 - unsafe.Sizeof(time.Duration(0))]byte // Padding for cache alignment
 }
 
 // Constants for compile-time configuration
@@ -67,7 +67,6 @@ func (c *Clock) run() {
 	ticker := time.NewTicker(c.interval)
 	defer ticker.Stop()
 
-	// to
 	worker := clockWorkerPool.Get().(chan time.Time)
 	defer clockWorkerPool.Put(worker)
 
@@ -79,11 +78,9 @@ func (c *Clock) run() {
 			c.metrics.updateCount.Add(1)
 			c.metrics.lastUpdate.Store(now.UnixNano())
 
-			// to
 			select {
 			case worker <- now:
 			default:
-				// to
 				c.metrics.errorCount.Add(1)
 			}
 		case <-c.stop:

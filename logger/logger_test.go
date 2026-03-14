@@ -110,7 +110,6 @@ func TestLoggerContextAware(t *testing.T) {
 	logger.InfoC(ctx, "context-aware message")
 
 	output := buf.String()
-	// at
 	// For now, just ensure no panic occurs and basic functionality works
 	if !strings.Contains(output, "context-aware message") {
 		t.Error("Context-aware message should be in output")

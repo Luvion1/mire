@@ -13,7 +13,6 @@ type Formatter interface {
 	Format(buf *bytes.Buffer, entry *core.LogEntry) error
 }
 
-// at
 type AllFormatter interface {
 	Formatter
 	// SetOptions allows setting formatter-specific options

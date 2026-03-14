@@ -10,7 +10,6 @@ import (
 	"github.com/Luvion1/mire/formatter"
 )
 
-// at
 func TestMemoryAllocations(t *testing.T) {
 	t.Run("TraceLevelAllocations", func(t *testing.T) {
 		allocs := testing.AllocsPerRun(1000, func() {
@@ -120,7 +119,6 @@ func TestThroughput(t *testing.T) {
 	})
 }
 
-// at
 func BenchmarkMemoryAllocations(b *testing.B) {
 	b.Run("BenchmarkTraceAlloc", func(b *testing.B) {
 		logger := New(LoggerConfig{
@@ -238,7 +236,6 @@ func BenchmarkFormatterAllocations(b *testing.B) {
 	})
 }
 
-// at
 func BenchmarkFieldAllocations(b *testing.B) {
 	b.Run("BenchmarkWithNoFields", func(b *testing.B) {
 		logger := New(LoggerConfig{
@@ -380,7 +377,6 @@ func BenchmarkThroughput(b *testing.B) {
 	})
 }
 
-// at
 func BenchmarkThroughputLevels(b *testing.B) {
 	levels := []struct {
 		name  string
@@ -416,7 +412,6 @@ func BenchmarkThroughputLevels(b *testing.B) {
 	}
 }
 
-// at
 func BenchmarkThroughputFormatters(b *testing.B) {
 	formatters := []struct {
 		name string
@@ -447,7 +442,6 @@ func BenchmarkThroughputFormatters(b *testing.B) {
 	}
 }
 
-// at
 func BenchmarkFormatters(b *testing.B) {
 	b.Run("BenchmarkTextFormatter", func(b *testing.B) {
 		logger := New(LoggerConfig{
@@ -661,7 +655,6 @@ func TestBufferedPerformance(t *testing.T) {
 	})
 }
 
-// at
 func TestFormatterPerformance(t *testing.T) {
 	formatters := []struct {
 		name string
@@ -701,8 +694,8 @@ func ExampleLogger_performance() {
 		Level:       core.INFO,
 		Output:      io.Discard, // Use io.Discard for benchmarks
 		AsyncMode:   true,       // Enable async logging
-		WorkerCount: 4,          // to
-		ChannelSize: 1000,       // Buffer up to 1000 log messages
+		WorkerCount: 4,
+		ChannelSize: 1000, // Buffer up to 1000 log messages
 		Formatter: &formatter.TextFormatter{
 			EnableColors:  false, // Disable colors for performance
 			ShowTimestamp: true,  // Include timestamps

@@ -83,7 +83,6 @@ func TestRotationConfigZeroValues(t *testing.T) {
 	}
 }
 
-// at
 func TestRotationConfigWithDifferentSizes(t *testing.T) {
 	testCases := []struct {
 		name     string
@@ -112,7 +111,6 @@ func TestRotationConfigWithDifferentSizes(t *testing.T) {
 	}
 }
 
-// at
 func TestRotationConfigWithDifferentDurations(t *testing.T) {
 	testCases := []struct {
 		name   string
@@ -141,7 +139,6 @@ func TestRotationConfigWithDifferentDurations(t *testing.T) {
 	}
 }
 
-// at
 func TestRotationConfigWithDifferentBackups(t *testing.T) {
 	testCases := []struct {
 		name       string
@@ -199,9 +196,7 @@ func TestRotationConfigBooleans(t *testing.T) {
 	}
 }
 
-// at
 func TestRotationConfigWithTimeDurations(t *testing.T) {
-	// at
 	testCases := []struct {
 		name         string
 		rotationTime time.Duration
@@ -230,7 +225,6 @@ func TestRotationConfigWithTimeDurations(t *testing.T) {
 	}
 }
 
-// at
 func TestRotationConfigWithFilenamePatterns(t *testing.T) {
 	testCases := []struct {
 		name            string
@@ -344,8 +338,6 @@ func TestRotationConfigComparison(t *testing.T) {
 		FilenamePattern: "test",
 	}
 
-	// at
-	// at
 	if config1.MaxSize != config2.MaxSize {
 		t.Error("Configs should be equal but MaxSize differs")
 	}

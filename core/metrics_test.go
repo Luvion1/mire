@@ -197,7 +197,6 @@ func TestCoreMetricsGetEntryMetrics(t *testing.T) {
 		t.Fatal("GetEntryMetrics returned nil")
 	}
 
-	// to
 	expectedKeys := []string{"created", "reused", "pool_miss", "serialized", "hit_ratio"}
 	for _, key := range expectedKeys {
 		if _, exists := entryMetrics[key]; !exists {
@@ -205,13 +204,11 @@ func TestCoreMetricsGetEntryMetrics(t *testing.T) {
 		}
 	}
 
-	// to
 	created := entryMetrics["created"]
 	reused := entryMetrics["reused"]
 	hitRatio := entryMetrics["hit_ratio"]
 
 	// Hit ratio = reused * 100 / (created + reused + 1)
-	// at
 	calculatedHitRatio := reused * 100 / (created + reused + 1)
 	if hitRatio != calculatedHitRatio {
 		t.Errorf("Hit ratio calculation mismatch: expected %d, got %d", calculatedHitRatio, hitRatio)
@@ -227,7 +224,6 @@ func TestCoreMetricsGetBufferMetrics(t *testing.T) {
 		t.Fatal("GetBufferMetrics returned nil")
 	}
 
-	// to
 	expectedKeys := []string{"gets", "puts", "misses", "hit_ratio"}
 	for _, key := range expectedKeys {
 		if _, exists := bufferMetrics[key]; !exists {
@@ -245,7 +241,6 @@ func TestCoreMetricsGetSliceMetrics(t *testing.T) {
 		t.Fatal("GetSliceMetrics returned nil")
 	}
 
-	// to
 	expectedKeys := []string{"gets", "puts"}
 	for _, key := range expectedKeys {
 		if _, exists := sliceMetrics[key]; !exists {
@@ -263,7 +258,6 @@ func TestCoreMetricsGetErrorMetrics(t *testing.T) {
 		t.Fatal("GetErrorMetrics returned nil")
 	}
 
-	// to
 	expectedKeys := []string{"errors"}
 	for _, key := range expectedKeys {
 		if _, exists := errorMetrics[key]; !exists {
@@ -281,7 +275,6 @@ func TestCoreMetricsGetTimingMetrics(t *testing.T) {
 		t.Fatal("GetTimingMetrics returned nil")
 	}
 
-	// to
 	expectedKeys := []string{"processing_time_ns", "last_operation"}
 	for _, key := range expectedKeys {
 		if _, exists := timingMetrics[key]; !exists {
@@ -299,7 +292,6 @@ func TestCoreMetricsGetAllMetrics(t *testing.T) {
 		t.Fatal("GetAllMetrics returned nil")
 	}
 
-	// to
 	expectedKeys := []string{"entries", "buffers", "slices", "errors", "timing"}
 	for _, key := range expectedKeys {
 		if _, exists := allMetrics[key]; !exists {
@@ -420,7 +412,6 @@ func TestCoreMetricsConcurrent(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			for j := 0; j < operationsPerGoroutine; j++ {
-				// at
 				metrics.IncEntryCreated()
 				metrics.IncEntryReused()
 				metrics.IncEntryPoolMiss()
@@ -488,7 +479,6 @@ func TestCoreMetricsHitRatioCalculation(t *testing.T) {
 		t.Errorf("Expected hit ratio %d, got %d", expectedHitRatio, hitRatio)
 	}
 
-	// at
 	metrics.ResetMetrics()
 	entryMetrics = metrics.GetEntryMetrics()
 	hitRatio = entryMetrics["hit_ratio"]

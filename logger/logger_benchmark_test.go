@@ -30,7 +30,6 @@ func BenchmarkBasicLogging(b *testing.B) {
 	}
 }
 
-// at
 func BenchmarkLoggingWithFields(b *testing.B) {
 	logger := New(LoggerConfig{
 		Level:  core.INFO,
@@ -228,7 +227,6 @@ func BenchmarkCSVLogging(b *testing.B) {
 	}
 }
 
-// at
 func BenchmarkMultipleLevels(b *testing.B) {
 	logger := New(LoggerConfig{
 		Level:  core.INFO,

@@ -135,7 +135,6 @@ func TestEntryFormatLogToBytesConcurrent(t *testing.T) {
 				entry.Fields["iteration"] = []byte(fmt.Sprintf("%d", j))
 				entry.Fields["goroutine"] = []byte(fmt.Sprintf("%d", i))
 
-				// at
 				buf := make([]byte, 0, 100)
 				result := entry.formatLogToBytes(buf)
 

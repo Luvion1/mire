@@ -184,7 +184,7 @@ func PutBuf(buf *[]byte) {
 // GetStringSlice gets a string slice from the pool
 func GetStringSlice() *[]string {
 	s := strSlicePool.Get().(*[]string)
-	*s = (*s)[:0] // to
+	*s = (*s)[:0]
 	return s
 }
 
@@ -757,7 +757,7 @@ const (
 
 // PutByteSlice returns a byte slice to the pool
 func PutByteSlice(b []byte) {
-	b = b[:0] // to
+	b = b[:0]
 	//nolint:staticcheck // Reset slice length before returning to pool is intentional for reuse
 	bufSlicePool.Put(b)
 }
