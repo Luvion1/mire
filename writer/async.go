@@ -125,7 +125,7 @@ func (al *AsyncLogger) processJob(job *logJob) {
 		al.processor.Log(ctx, job.level, job.msg, job.keyvals...)
 	} else {
 		// Convert fields to keyvals or call with empty keyvals
-		if job.fields != nil && len(job.fields) > 0 {
+		if len(job.fields) > 0 {
 			keyvals := make([][]byte, 0, len(job.fields)*2)
 			for k, v := range job.fields {
 				keyvals = append(keyvals, []byte(k), v)

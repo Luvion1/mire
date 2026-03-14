@@ -16,7 +16,8 @@ var clockWorkerPool = sync.Pool{
 // Buffer pool for zero-allocation time formatting
 var timeBufferPool = sync.Pool{
 	New: func() interface{} {
-		return make([]byte, 0, 32) // Pre-allocated buffer
+		buf := make([]byte, 0, 32) // Pre-allocated buffer
+		return &buf
 	},
 }
 
@@ -135,7 +136,7 @@ func (cm *ClockMetrics) ErrorCount() int64 {
 func (c *Clock) TimeToBytes() []byte {
 	t := c.Now()
 	// Get pre-allocated buffer from pool for zero allocation
-	buf := timeBufferPool.Get().([]byte)
+	buf := *timeBufferPool.Get().(*[]byte)
 	buf = buf[:0] // Reset buffer length without reallocating
 
 	// Manual formatting to avoid fmt overhead
@@ -169,6 +170,7 @@ func Now() time.Time {
 }
 
 // ReleaseTimeBuffer returns the buffer to the pool after use
-func (c *Clock) ReleaseTimeBuffer(buf []byte) {
-	timeBufferPool.Put(buf[:0]) // Reset buffer before returning to pool to prevent data leakage
+func (c *Clock) ReleaseTimeBuffer(buf *[]byte) {
+	*buf = (*buf)[:0] // Reset buffer before returning to pool to prevent data leakage
+	timeBufferPool.Put(buf)
 }
