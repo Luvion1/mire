@@ -198,8 +198,8 @@ func GetSmallBuf() []byte {
 func PutSmallBuf(b []byte) {
 	// Avoid putting back overly large slices to prevent pool pollution
 	if cap(b) < MaxSmallSlicePoolSize { // Keep slices up to 1KB
-		//nolint:staticcheck
-		smallByteSlicePool.Put(b)
+	//nolint:staticcheck // Reset slice length before returning to pool is intentional for reuse
+	smallByteSlicePool.Put(b)
 		atomic.AddInt64(&globalPoolMetrics.slicePutCount, 1)
 	} else {
 		atomic.AddInt64(&globalPoolMetrics.discardedCount, 1)
@@ -245,7 +245,7 @@ func GetStringSlice() []string {
 
 // PutStringSlice returns a []string to the pool
 func PutStringSlice(s []string) {
-	//nolint:staticcheck
+	//nolint:staticcheck // Reset slice length before returning to pool is intentional for reuse
 	stringSlicePool.Put(s)
 	atomic.AddInt64(&globalPoolMetrics.slicePutCount, 1)
 }

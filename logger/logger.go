@@ -439,7 +439,7 @@ func (l *Logger) logBytes(ctx context.Context, level core.Level, message []byte,
 
 // final write to output with zero-allocation optimizations for interface{} fields (backward compatibility)
 //
-//nolint:unused
+//nolint:unused // Kept for backward compatibility with legacy code
 func (l *Logger) write(ctx context.Context, level core.Level, message []byte, fields map[string]interface{}) {
 	entry := l.buildEntry(ctx, level, message, fields)
 
@@ -683,7 +683,7 @@ func (l *Logger) formatfArgsToBytes(format string, args ...interface{}) []byte {
 
 // buildEntry creates a log entry with minimal allocations
 //
-//nolint:unused
+//nolint:unused // Kept for backward compatibility with legacy code
 func (l *Logger) buildEntry(ctx context.Context, level core.Level, message []byte, fields map[string]interface{}) *core.LogEntry {
 	entry := core.GetEntry()
 

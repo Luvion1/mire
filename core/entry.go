@@ -758,7 +758,7 @@ const (
 // PutByteSlice returns a byte slice to the pool
 func PutByteSlice(b []byte) {
 	b = b[:0] // to
-	//nolint:staticcheck
+	//nolint:staticcheck // Reset slice length before returning to pool is intentional for reuse
 	byteSlicePool.Put(b)
 }
 
