@@ -204,7 +204,7 @@ func TestClockTimeToBytes(t *testing.T) {
 	}
 
 	// Release the buffer back to the pool
-	clock.ReleaseTimeBuffer(timeBytes)
+	clock.ReleaseTimeBuffer(&timeBytes)
 }
 
 // TestClockReleaseTimeBuffer tests the ReleaseTimeBuffer method
@@ -219,7 +219,7 @@ func TestClockReleaseTimeBuffer(t *testing.T) {
 	timeBytes := clock.TimeToBytes()
 
 	// Release the buffer
-	clock.ReleaseTimeBuffer(timeBytes)
+	clock.ReleaseTimeBuffer(&timeBytes)
 
 	// The buffer might be reused, but we can't easily verify this without
 	// checking internal pool state, so just ensure the function doesn't panic
