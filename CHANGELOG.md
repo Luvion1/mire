@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-03-14
+
+### Fixed
+
+- **core/entry.go**: Fixed `getGoroutineID()` edge case when stack output is less than 10 bytes
+- **logger/logger.go**: Fixed race condition in `writeZero()` by copying keyvals slice instead of direct assignment
+- **util/clock.go**: Fixed `ReleaseTimeBuffer()` to properly reset buffer before returning to pool
+
+### Performance
+
+- **core/entry.go**: Optimized `getGoroutineID()` with smaller buffer (32 bytes) and faster manual parsing
+- **formatter/json.go**: Optimized `formatAllFields()` with early mask check and reduced string conversions
+- **logger/logger.go**: Optimized context extraction using `ExtractToBytes()` instead of `ExtractFromContext()`
+- **writer/buffered.go**: Improved buffer pool handling by returning buffers with full capacity for better reuse
+
+### Added
+
+- **logger/logger.go**: Added CSV formatter mask value support in config validation
+
 ## [0.0.7] - 2025-12-28
 
 ### Added
