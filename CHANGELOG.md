@@ -45,14 +45,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - efficient_usage.go - Zero-allocation patterns
   - advanced_example.go - Context-aware, hooks, performance
   - external_example.go - External service integration
-  - **NEW** microservices.go - Complete microservice patterns
 
 - All examples demonstrate:
   - Global API: \`log.Mire()\`
   - Logger API: \`log.LogZ()\`, \`log.LogZC()\`
   - Zero-allocation with \`[]byte\` parameters
 
-## [v0.0.6] - 2025-12-28
+## [0.0.6] - 2025-12-28
 
 ### BREAKING CHANGES
 
@@ -104,7 +103,7 @@ log.Info("message", "user_id", 12345)
 log.InfoC(ctx, "message with context")
 ```
 
-**After (vv0.0.6):**
+**After (v0.0.6):**
 ```go
 log.Mire(ctx, log.INFO, []byte("message"))
 log.Mire(ctx, log.INFO, []byte("User alice logged in"))

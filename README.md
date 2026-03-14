@@ -515,7 +515,7 @@ Note: Formatters achieve better performance with direct []byte manipulation. CSV
 - Handles concurrent operations efficiently
 - Concurrent formatter operations: ~100.7ns/op with 1 alloc/op
 
-### Performance Conclusion (vv0.0.6)
+### Performance Conclusion (v0.0.6)
 
 1. **Ultra-Low Memory Allocation**: The library achieves 1-6 allocations per log operation with []byte fields directly.
 
